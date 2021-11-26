@@ -88,7 +88,7 @@ jobs:
             cd frontend
             npm i
             npm audit fix --audit-level=critical --force  # Will Fix the vulnerability 
-#           npm audit --audit-level=critical    ---> will report vulnerabilities
+            npm audit --audit-level=critical    ---> will report vulnerabilities
       - save_cache:
           paths:  [frontend/node_modules]
           key:  frontend-build
@@ -106,7 +106,7 @@ jobs:
             cd backend
             npm 
             npm audit fix --audit-level=critical --force  # Will Fix the vulnerability 
-#           npm audit --audit-level=critical    ---> will report vulnerabilities
+            npm audit --audit-level=critical    #--> will report vulnerabilities
       - save_cache:
           paths:  [backend/node_modules]
           key:  backend-build
