@@ -104,9 +104,9 @@ jobs:
           name: Back-end Audit
           command:  |
             cd backend
-            npm 
-            npm audit fix --audit-level=critical --force
-            npm audit fix --audit-level=critical
+            npm i
+            npm audit fix --audit-level=critical --force 
+            npm audit --audit-level=critical  
       - save_cache:
           paths:  [backend/node_modules]
           key:  backend-build
