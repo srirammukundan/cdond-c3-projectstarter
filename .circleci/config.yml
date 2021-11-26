@@ -46,7 +46,7 @@ jobs:
           name: Front-end Tests
           command:  |
             cd frontend
-            npm i oauth-sign
+            npm i 
             npm run test
       - save_cache:
           paths: [frontend/node_modules]
