@@ -173,6 +173,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       - destroy-environment      
+  
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
@@ -207,6 +208,136 @@ jobs:
       - destroy-environment
         #  workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       # Here's where you will add some code to rollback on failure     
+    
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Inspect files
+          command:  |
+            cd backend
+            ls .env
+            cat .env
+      - run:
+          name: npm install
+          command:  |
+            cd backend
+            npm i
+            npm run build
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            touch migrations_result.txt
+            ls
+            npm run migrations >> ~/project/backend/migrations_result.txt
+            cat migrations_result.txt
+          # Your code here
+          # exit 1
+      - run:
+          name: Send migration results to memstash
+          command: |
+            cd backend
+            cat ~/project/backend/migrations_result.txt
+            if grep -q "has been executed successfully." ~/project/backend/migrations_result.txt
+            then
+              curl -H "Content-Type: text/plain" -H "token: 4354a80b-6a24-410f-bfd1-d940390f894b" --request PUT --data "" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID}
+              echo migration_${CIRCLE_WORKFLOW_ID}
+              echo "SUCCESS = 1"
+            else
+              echo $(curl -H "Content-Type: text/plain" -H "token: 4354a80b-6a24-410f-bfd1-d940390f894b" --request PUT --data "0" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID} | grep "No migrations")
+              echo "migration ID" migration_${CIRCLE_WORKFLOW_ID}
+              echo "FAIL = 0"
+            fi
+            
+          # Your code here
+          # exit 1
+      - revert-migrations
+
+  deploy-frontend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - run:
+          name: Intall git
+          command:  |
+            yum install git -y
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum install sudo -y
+            curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
+            yum install nodejs -y
+            node --version
+            npm --version
+            yum install tar -y
+            yum install gzip -y
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Get backend url
+          command: |
+            cd frontend
+            touch .env
+            BACKEND_IP=$(curl -H "token: ce-${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/backend-ip)
+            echo "$BACKEND_IP"
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo API_URL="$API_URL" >> .env
+            cat .env
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            npm i
+            npm run build
+            aws s3 cp ~/project/frontend/dist s3://udapeople-"${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+          # your code here
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/frontend/.env
+          # your code here
+      - destroy-environment
+      - revert-migrations
+                    
+  deploy-backend:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "cb:58:a9:e7:b1:d0:bd:49:b6:03:e2:5c:f6:38:bf:8c"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update openssh-client
+            apk add --update tar gzip curl
+            apk add --update ansible
+            apk add --update nodejs npm
+            echo "[defaults]" | cat > .circleci/ansible/ansible.cfg
+            echo "host_key_checking = False" | cat >> .circleci/ansible/ansible.cfg
+            cd backend
+            ls
+            cat .env
+          # your code here
+      - run:
+          name: Deploy backend and install node exporter
+          no_output_timeout: 90m
+          command: |
+            tar -C backend -czvf artifact.tar.gz .
+            ls -la
+            cd .circleci/ansible/
+            ansible-galaxy install weareinteractive.environment
+            ansible-playbook -i inventory.txt deploy-backend.yml
+            echo "Success"
 
 
 workflows:
@@ -226,3 +357,5 @@ workflows:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
