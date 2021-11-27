@@ -238,19 +238,23 @@ jobs:
       - run:
           name: Inspect files
           command:  |
+            pwd
             cd backend
+            pwd
             ls .env
             cat .env
       - run:
           name: npm install
           command:  |
             cd backend
+            pwd
             npm i
             npm run build
       - run:
           name: Run migrations
           command: |
             cd backend
+            pwd
             touch migrations_result.txt
             ls
             npm run migrations >> ~/project/backend/migrations_result.txt
