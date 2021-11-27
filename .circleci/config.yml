@@ -3,6 +3,32 @@ version: 2.1
 orbs:
   slack: circleci/slack@4.1
 
+commands:
+  destroy-environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.  
+    steps:
+      - run:
+          name: Install AWS CLI if not Exist
+          when: on_fail
+          command: |
+            if ! [ -x "$(command -v aws)" ]; then
+            pip install awscli
+            else
+            echo "AWS CLI already installed"
+            fi
+      - run:
+          name: Destroy S3 Buckets
+          when: on_fail
+          command: |
+            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            aws s3 rb s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --force
+      - run:
+          name: Destroy Stacks
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+
 jobs:
   build-frontend:
     docker:
@@ -117,10 +143,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install tar/gzip utility
-          command: |
-            yum -y install tar gzip
-      - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
@@ -135,7 +157,20 @@ jobs:
               --template-file .circleci/files/frontend.yml \
               --stack-name "frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
-              --tags project=Udapeople-sm 
+              --tags project=Udapeople
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            aws ec2 describe-instances --query \
+            'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters Name=instance-state-name,Values=running \
+            --output text >> .circleci/ansible/inventory.txt
+            cat .circleci/ansible/inventory.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      - destroy-environment      
 
 workflows:
   default:
@@ -150,3 +185,5 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
+      - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
