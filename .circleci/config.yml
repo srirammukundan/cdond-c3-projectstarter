@@ -265,31 +265,16 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: ~/
-      - run:
-          name: Inspect files
-          command:  |
-            pwd
-            cd /
-            ls -al
-            cd backend
-            pwd
-            ls .env
-            cat .env
-      - run:
-          name: npm install
-          command:  |
-            cd backend
-            pwd
-            npm i
-            npm run build
+          at: .
       - run:
           name: Run migrations
+          working_directory: ./backend
           command: |
             cd backend
             pwd
             touch migrations_result.txt
             ls
+            npm install
             npm run migrations >> ~/project/backend/migrations_result.txt
             cat migrations_result.txt
           # Your code here
