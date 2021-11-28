@@ -275,15 +275,6 @@ jobs:
             ls .env
             cat .env
       - run:
-          name: npm install
-          command:  |
-            pwd
-            ls -al
-            cd backend
-            npm i
-            npm audit fix --audit-level=critical --force
-          #  npm run build
-      - run:
           name: Run migrations
           working_directory: ./backend
           command: |
@@ -291,7 +282,9 @@ jobs:
             pwd
             touch migrations_result.txt
             ls
-            npm install
+            npm i
+            npm run build
+            npm audit fix --audit-level=critical --force
             npm run migrations >> ~/project/backend/migrations_result.txt
             cat migrations_result.txt
           # Your code here
