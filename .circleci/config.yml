@@ -269,6 +269,7 @@ jobs:
           keys: [backend-build]
       - run:
           name: Run migrations
+          no_output_timeout: 30m
           command: |
             ls -la
             pwd
@@ -278,7 +279,6 @@ jobs:
             touch migrations_result.txt
             ls
             npm i
-            no_output_timeout: 30m
             npm run migrations > migration_output.txt
             cat migrations_result.txt
           # Your code here
