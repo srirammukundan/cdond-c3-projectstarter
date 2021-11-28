@@ -286,7 +286,6 @@ jobs:
             ls
             npm i
             npm run build
-            npm audit fix --audit-level=critical --force
             npm run migrations >> ~/project/backend/migrations_result.txt
             cat migrations_result.txt
           # Your code here
