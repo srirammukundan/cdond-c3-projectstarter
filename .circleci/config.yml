@@ -239,7 +239,9 @@ jobs:
           name: Inspect files
           command:  |
             pwd
-            cd ~/backend
+            cd /
+            ls -al
+            cd backend
             pwd
             ls .env
             cat .env
@@ -335,7 +337,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "cb:58:a9:e7:b1:d0:bd:49:b6:03:e2:5c:f6:38:bf:8c"
+            - "aa:79:8f:07:da:96:16:74:7e:89:4a:61:52:9a:5a:c4"
       - attach_workspace:
           at: ~/
       - run:
