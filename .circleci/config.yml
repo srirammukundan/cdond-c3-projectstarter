@@ -265,11 +265,28 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: .
+          at: ~/
+      - run:
+          name: Inspect files
+          command:  |
+            pwd
+            ls -la
+            cd backend
+            ls .env
+            cat .env
+      - run:
+          name: npm install
+          command:  |
+            pwd
+            ls -al
+            cd backend
+            npm i
+            npm run build
       - run:
           name: Run migrations
           working_directory: ./backend
           command: |
+            ls -la
             cd backend
             pwd
             touch migrations_result.txt
@@ -400,3 +417,7 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [deploy-backend]
+      - deploy-backend:
+          requires: [run-migrations]
