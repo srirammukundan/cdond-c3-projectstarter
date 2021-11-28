@@ -1,32 +1,31 @@
-- name: "wait 60 seconds for target connection to become reachable/usable."
-  wait_for_connection:
-    timeout: 30
+---
 
-- name: "update apt packages"
-  become: yes
-  apt:
-    update_cache: yes
+  - name: "update apt packages."
+    become: yes
+    apt:
+      update_cache: yes
 
-- name: "upgrade packages"
-  become: yes
-  apt:
-    upgrade: "yes"
-    update_cache: yes
+  - name: "upgrade packages"
+    become: yes
+    apt:
+      upgrade: yes
 
-- name: "install node"
-  become: yes
-  apt:
-    name: nodejs
-    state: present
-  
-- name: "install npm"
-  become: yes
-  apt:
-    name: npm
-    state: present
+  - name: "remove dependencies that are no longer required"
+    become: yes
+    apt:
+      autoremove: yes
 
-- name: "install pm2"
-  become: yes
-  npm:
-    name: pm2
-    global: yes
+  - name: "install nodejs and npm"
+    become: yes
+    apt:
+      name: ["nodejs", "npm"]
+      state: latest
+      update_cache: yes
+
+  - name: "install pm2"
+    become: yes
+    npm:
+      name: pm2
+      global: yes
+      production: yes
+      state: present
