@@ -267,19 +267,12 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: Inspect files
-          command:  |
-            pwd
-            ls -la
-            cd backend
-            ls .env
-            cat .env
-      - run:
           name: Run migrations
           command: |
             ls -la
             pwd
             cd ~/project/backend
+            ls .env
             touch migrations_result.txt
             ls
             npm i
