@@ -213,7 +213,7 @@ jobs:
           command:  |
             ls -a
             pwd
-       - run:
+      - run:
           name: Configure env variables
           command:  |
             touch backend/.env
