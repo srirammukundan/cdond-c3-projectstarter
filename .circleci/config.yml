@@ -239,9 +239,7 @@ jobs:
           name: Inspect files
           command:  |
             pwd
-            cd..
-            cd..
-            cd backend
+            cd ~/backend
             pwd
             ls .env
             cat .env
