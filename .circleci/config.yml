@@ -201,8 +201,35 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["aa:79:8f:07:da:96:16:74:7e:89:4a:61:52:9a:5a:c4"]
+      - run:
+          name: Check files and dir
+          command:  |
+            ls -a
+            pwd
       - attach_workspace:
           at: ~/
+      - run:
+          name: Check files and dir
+          command:  |
+            ls -a
+            pwd
+       - run:
+          name: Configure env variables
+          command:  |
+            touch backend/.env
+            echo ENVIRONMENT=production >> "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+            echo TYPEORM_HOST="$TYPEORM_HOST" >> "backend/.env"
+            echo TYPEORM_PORT="$TYPEORM_PORT" >> "backend/.env"
+            echo TYPEORM_USERNAME="$TYPEORM_USERNAME" >> "backend/.env"
+            echo TYPEORM_PASSWORD="$TYPEORM_PASSWORD" >> "backend/.env"
+            echo TYPEORM_DATABASE="$TYPEORM_DATABASE" >> "backend/.env"
+            echo NODE_ENV=local >> "backend/.env"
+            cat backend/.env
+     
       # Checkout code from git
       # Add ssh keys with fingerprint
       # attach workspace
@@ -224,6 +251,10 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
             #exit 1
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/backend/.env
       - destroy-environment
         #  workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       # Here's where you will add some code to rollback on failure     
