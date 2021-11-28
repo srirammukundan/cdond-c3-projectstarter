@@ -278,6 +278,7 @@ jobs:
             touch migrations_result.txt
             ls
             npm i
+            no_output_timeout: 30m
             npm run migrations > migration_output.txt
             cat migrations_result.txt
           # Your code here
