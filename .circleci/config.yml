@@ -10,29 +10,36 @@ commands:
       # Add parameter here   
     steps:
       - run:
+          name: Delete S3 content
+          when: on_fail
+          command: |
+            aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            exit 0
+      - run:
           name: Destroy environments
           when: on_fail
           command: |
-            # Your code here
-            exit 1
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            exit 0
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
       # Add parameter here     
     steps:
+      - restore_cache:
+          key: backend-build
       - run:
           name: Revert migrations
-          # Add when this will run
+          when: on_fail
           command: |
-            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = 1
+            SUCCESS=`curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}`
             if(( $SUCCESS==1 )); 
             then
-            #  cd ~/project/backend
-            #  npm install
-            #  Add revert code here. You can find this in the Getting Started section.
-              exit 1
+              cd ~/project/backend
+              npm install
+              npm run migrations:revert
             fi
             
 jobs:
@@ -149,13 +156,14 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - run:
+          name : Install libraries 
+          command: |            
+            yum -y install tar
+            yum -y install gzip
+            yum -y install curl
       - attach_workspace:
-          at: .
-      - run: 
-          command: |
-            sudo apt-get install tar
-            sudo apt-get install gzip
-            sudo apt-get install curl
+          at: ~/
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -185,88 +193,145 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      # Here's where you will add some code to rollback on failure      
+      - destroy-environment
 
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
+    ~/
       - add_ssh_keys:
           fingerprints: ["44:97:9b:ba:85:db:97:28:ec:c5:05:8a:b1:42:3e:3f"]
-      # attach workspace
       - run:
           name: Install dependencies
           command: |
-            # Your code here
-            exit 1
+            apk add --update ansible 
+            apk add --update tar                        
+            apk add --update gzip
+            apk add --update curl
+            pip3 install --upgrade pip 
+            pip install awscli
+      - attach_workspace:
+          at: ~/
       - run:
           name: Configure server
           command: |
-            # Your code here
-            exit 1
-      # Here's where you will add some code to rollback on failure      
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment
+         
 
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          key: backend-build
       - run:
-          name: Run migrations
+          name: Install AWS CLI
           command: |
-            # Your code here
-            exit 1
+            cd backend
+            npm install
+            sudo apt-get update && sudo apt-get install -yy less
+            sudo apt-get install unzip -y
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+      - run:
+          name: Run Migrations
+            working_directory: ./backend
+          command: |
+            export TYPEORM_HOST=$(cat ../.circleci/ansible/backend_ip)
+            export TYPEORM_USERNAME=$(echo $TYPEORM_USERNAME)
+            export TYPEORM_PASSWORD=$(echo $TYPEORM_PASSWORD)
+            export TYPEORM_DATABASE=$(echo $TYPEORM_DATABASE)
+            npm run migrations > migration_dump.txt
       - run:
           name: Send migration results to memstash
+          working_directory: ./backend
           command: |
-            # Your code here
-            exit 1
-     # Here's where you will add some code to rollback on failure      
+            if grep -q "has been executed successfully" migrations_dump.txt
+            then
+              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+            fi
+      - revert-migrations
+      - destroy-environment
 
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
+      - image: circleci/node:13.8.0
     steps:
-      # Checkout code from git
+      - checkout
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
-            # your code here
+            npm install
+            sudo apt-get update && sudo apt-get install -yy less
+            sudo apt-get install unzip -y
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - run:
           name: Get backend url
           command: |
-            # your code here
+            BACKEND_IP=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/backendip)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
+            echo "$API_URL" >> ".env"
+            npm run build
+                       
       - run:
           name: Deploy frontend objects
           command: |
-            # your code here
-      # Here's where you will add some code to rollback on failure      
-                    
+            npm install
+            npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      - revert-migrations
+      - destroy-environment   
+                          
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.7-alpine3.1
     steps:
-      # Checkout code from git
-      # Add ssh keys with fingerprint
-      # attach workspace
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["44:97:9b:ba:85:db:97:28:ec:c5:05:8a:b1:42:3e:3f"]
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          key: backend-build
       - run:
           name: Install dependencies
           command: |
-            # your code here
+            apk add --update ansible openssh-client tar gzip curl nodejs npm
+            pip install awscli
       - run:
           name: Deploy backend
           command: |
-            # your code here
-      # Here's where you will add some code to rollback on failure  
-
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            tar -C backend -czvf artifact.tar.gz .
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+      - revert-migrations
+      - destroy-environment
+      
   smoke-test:
     docker:
       - image: alpine:latest 
     steps:
-      # Checkout code from git
+      - checkout
       - run:
           name: Install dependencies
           command: |
@@ -289,7 +354,7 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      # Checkout code from git
+      - checkout
       - run:
           name: Install dependencies
           command: |
@@ -304,7 +369,7 @@ jobs:
     docker:
       - image: amazon/aws-cli
     steps:
-      # Checkout code from git
+      - checkout
       - run:
           name: Get old stack workflow id
           command: |

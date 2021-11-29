@@ -1,0 +1,43 @@
+---
+  - name: Create application folder
+    become: yes
+    file:
+      path: /home/ubuntu/myapp
+      state: directory
+
+  - name: "Copy backend build folder to EC2"
+    become: yes
+    unarchive:
+      src: ../../backend/dist/backend.tar.gz
+      dest: /home/ubuntu/myapp/
+      owner: ubuntu
+
+  - name: "Copy package.json to EC2"
+    become: yes
+    copy:
+      src: ../../backend/node_modules/package.json
+      dest: /home/ubuntu/myapp/
+      owner: ubuntu
+
+  - name: "NPM Install"
+    shell:
+      cmd: npm install --production
+      chdir: /home/ubuntu/myapp
+
+  - name: "Start backend with pm2"
+    become: yes
+    shell: |
+      cd /home/ubuntu/myapp
+      pm2 start main.js --name app
+    environment:
+      ENVIRONMENT: production
+      TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
+      TYPEORM_MIGRATIONS_DIR: "./migrations"
+      TYPEORM_MIGRATIONS: "./migrations/*.js"
+      TYPEORM_ENTITIES: "./modules/domain/**/*.entity.js"
+      TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
+      TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
+      TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
+      TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
+      TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
+
