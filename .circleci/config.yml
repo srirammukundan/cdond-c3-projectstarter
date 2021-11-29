@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@2.0.3
+  slack: circleci/slack@4.5.0
 
 commands:
   destroy-environment:
@@ -33,6 +34,19 @@ commands:
             #  Add revert code here. You can find this in the Getting Started section.
               exit 1
             fi
+
+  notify-failure:
+    description: Notify Failure to Slack Channel if front end or backend build or test fails.
+    parameters:
+    steps:
+      - run:
+        name: Notify Failure
+        command: |
+          # your code here
+      - slack/notify: |
+          channel: nanodegree
+          event: fail
+          template: basic_fail_1
             
 jobs:
   build-frontend:
@@ -51,6 +65,8 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontendbuild
+      - notify-failure:
+          when: on_fail
 
   build-backend:
     docker:
@@ -68,6 +84,8 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backendbuild
+      - notify-failure:
+          when: on_fail
 
   test-frontend:
     docker:
@@ -85,6 +103,8 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: test4frontend
+      - notify-failure:
+          when: on_fail
 
   test-backend:
     docker:
@@ -102,6 +122,8 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: test4backend 
+      - notify-failure:
+          when: on_fail
 
   scan-frontend:
     docker:
@@ -120,6 +142,8 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: scanfrontend
+      - notify-failure:
+          when: on_fail
 
   scan-backend:
     docker:
@@ -138,6 +162,8 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: scanbackend
+      - notify-failure:
+          when: on_fail
 
   deploy-infrastructure:
     docker:
