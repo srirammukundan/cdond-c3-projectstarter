@@ -285,6 +285,7 @@ jobs:
             cd ~/project/backend
             pwd
             npm i
+            npm run build
             npm i pg
             echo " pwd ---> " pwd
             ls -la
