@@ -251,9 +251,6 @@ jobs:
             apk add gzip
             apk add --update ansible
             pip install awscli
-            npm i
-            npm run build
-            npm i pg
             #exit 1
       - run:
           name: Configure server
