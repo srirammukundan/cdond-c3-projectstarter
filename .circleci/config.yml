@@ -149,13 +149,13 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - attach_workspace:
-          at: .
       - run: 
           command: |
-            sudo apt-get install tar
-            sudo apt-get install gzip
-            sudo apt-get install curl
+            yum -y install tar
+            yum -y install gzip
+            yum -y install curl
+      - attach_workspace:
+          at: .
       - run:
           name: Ensure back-end infrastructure exists
           command: |
