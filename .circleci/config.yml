@@ -23,22 +23,33 @@ commands:
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
-    #parameters:
+    parameters:
+      workflow_id:
+        type: string
       # Add parameter here     
     steps:
       - run:
           name: Revert migrations
+          when: on_fail
+          working_directory: ./backend
           # Add when this will run
           command: |
-            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = 1
-            if(( $SUCCESS==1 )); 
-            then
+              status=$(curl -H "token: 6fafc41a-e956-4316-abf9-6b4d6a306a94" --request GET https://api.memstash.io/values/migration_status__<<parameters.workflow_id>>)
+              echo $status
+              if [[ "$status" == "db_success" ]]
+              then
+                apk add --update tar gzip curl nodejs npm
+                npm run migrations:revert
+              fi
+          # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
+          #  SUCCESS = 1
+          #  if(( $SUCCESS==1 )); 
+          #  then
             #  cd ~/project/backend
             #  npm install
             #  Add revert code here. You can find this in the Getting Started section.
-              exit 1
-            fi
+          #    exit 1
+          #  fi
             
 jobs:
   build-frontend:
@@ -329,8 +340,8 @@ jobs:
             - project/frontend/dist
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      #- revert-migrations:
-      #    workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           # your code here
       # Here's where you will add some code to rollback on failure      
                     
@@ -376,8 +387,8 @@ jobs:
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/node-explorer.yml
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      #- revert-migrations:
-      #    workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
          # your code here
       # Here's where you will add some code to rollback on failure  
 
@@ -386,23 +397,50 @@ jobs:
       - image: python:3.7-alpine3.11
       # Lightweight Docker image 
     steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
       # Checkout code from git
       - run:
           name: Install dependencies
           command: |
-            # your code here
+            apk add --update curl
+            pip install awscli
+          # your code here
       - run:
           name: Get backend url
           command: |
-            # your code here
+            pwd
+            cat .circleci/ansible/inventory.txt
+            ls
+            cat ~/output.txt
+            export API_URL=`cat ~/output.txt`
+            echo "API_URL: $API_URL"
+          # your code here
       - run:
           name: Backend smoke test.
           command: |
-            # your code here
+            if curl -s $API_URL/api/status
+            then
+              return 0
+            else
+              return 1
+            fi
+          # your code here
       - run:
           name: Frontend smoke test.
           command: |
-            # your code here
+            if curl -s http://udapeoplep3-udap-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.us-west-2.amazonaws.com/ | grep "Welcome"
+            then
+              return 1
+            else
+              return 1
+            fi
+          # your code here
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       # Here's where you will add some code to rollback on failure  
 
   cloudfront-update:
