@@ -151,7 +151,11 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-      - run: yum install -y tar gzip
+      - run: 
+          command: |
+            sudo apt-get install tar
+            sudo apt-get install gzip
+            sudo apt-get install curl
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -187,8 +191,9 @@ jobs:
     docker:
       - image: python:3.7-alpine3.11
     steps:
-      # Checkout code from git
-      # Add ssh keys with fingerprint
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["44:97:9b:ba:85:db:97:28:ec:c5:05:8a:b1:42:3e:3f"]
       # attach workspace
       - run:
           name: Install dependencies
