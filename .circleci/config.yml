@@ -217,6 +217,7 @@ jobs:
       - run:
           name: Configure env variables
           command:  |
+            pwd
             touch backend/.env
             echo ENVIRONMENT=production >> "backend/.env"
             echo TYPEORM_CONNECTION=postgres >> "backend/.env"
@@ -229,6 +230,10 @@ jobs:
             echo TYPEORM_PASSWORD="$TYPEORM_PASSWORD" >> "backend/.env"
             echo TYPEORM_DATABASE="$TYPEORM_DATABASE" >> "backend/.env"
             echo NODE_ENV=local >> "backend/.env"
+            echo "--------------------------------"
+            echo "----------Env Variables---------"
+            echo "--------------------------------"
+
             cat backend/.env
      
       # Checkout code from git
@@ -257,7 +262,7 @@ jobs:
           paths:
             - project/backend/.env
       - destroy-environment
-        #  workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      #  workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       # Here's where you will add some code to rollback on failure     
     
   run-migrations:
@@ -276,6 +281,8 @@ jobs:
             cd ~/project/backend
             pwd
             ls -la
+            ls .env
+            cat .env
             touch migrations_result.txt
             ls
             npm i
