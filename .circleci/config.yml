@@ -251,6 +251,9 @@ jobs:
             apk add gzip
             apk add --update ansible
             pip install awscli
+            npm i
+            npm run build
+            npm i pg
             #exit 1
       - run:
           name: Configure server
@@ -259,6 +262,7 @@ jobs:
             cd .circleci/ansible
             ls -al
             cat inventory.txt
+            no_output_timeout: 20m
             ansible-playbook -i inventory.txt configure-server.yml
             #exit 1
       - persist_to_workspace:
