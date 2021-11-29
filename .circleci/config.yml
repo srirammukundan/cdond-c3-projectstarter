@@ -284,6 +284,9 @@ jobs:
             pwd
             cd ~/project/backend
             pwd
+            npm i
+            npm i pg
+            echo " pwd ---> " pwd
             ls -la
             ls .env
             cat .env
