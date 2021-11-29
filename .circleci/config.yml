@@ -306,7 +306,6 @@ jobs:
       - run:
           name: Get backend url
           command: |
-          # your code here
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
       - run:
@@ -327,8 +326,8 @@ jobs:
             - project/frontend/dist
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      - revert-migrations:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      #- revert-migrations:
+      #    workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
           # your code here
       # Here's where you will add some code to rollback on failure      
                     
@@ -374,8 +373,8 @@ jobs:
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/node-explorer.yml
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      - revert-migrations:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      #- revert-migrations:
+      #    workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
          # your code here
       # Here's where you will add some code to rollback on failure  
 
