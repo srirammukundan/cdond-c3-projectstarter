@@ -50,7 +50,7 @@ jobs:
             npm run build
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-build
+          key: frontendbuild
 
   build-backend:
     docker:
@@ -67,7 +67,7 @@ jobs:
               npm run build
       - save_cache:
           paths: [backend/node_modules]
-          key: backend-build
+          key: backendbuild
 
   test-frontend:
     docker:
@@ -84,7 +84,7 @@ jobs:
             npm run test
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-test             
+          key: test4frontend
 
   test-backend:
     docker:
@@ -101,23 +101,41 @@ jobs:
             npm run test
       - save_cache:
           paths: [backend/node_modules]
-          key: backend-test 
+          key: test4backend 
 
-  #scan-frontend:
-  #  docker:
-  #    - image: circleci/node:13.8.0
-  #  steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
-
-  #scan-backend:
-  #  docker:
-  #    - image: circleci/node:13.8.0
-  #  steps:
-      # Checkout code from git
-      # Restore from cache
-      # Your job code here
+  scan-frontend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [frontend-test]
+      - run:
+          name: Scanning frontend
+          command: |
+            cd frontend                               
+            npm install
+            npm audit fix --audit-level=critical --force
+      - save_cache:
+          paths: [frontend/node_modules]
+          key: scanfrontend
+          
+  scan-backend:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-test]
+      - run:
+          name: Scanning backend
+          command: |
+            cd backend
+            npm install
+            npm audit fix --audit-level=critical --force
+      - save_cache:
+          paths: [backend/node_modules]
+          key: scanbackend
 
   deploy-infrastructure:
     docker:
@@ -294,10 +312,10 @@ workflows:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
-      #- scan-backend:
-      #    requires: [build-backend]
-      #- scan-frontend:
-      #    requires: [build-frontend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
       - deploy-infrastructure:
           #requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
