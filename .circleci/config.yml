@@ -202,19 +202,49 @@ jobs:
       - image: python:3.7-alpine3.11
       # Docker image here that supports Ansible
     steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints: ["ed:53:cc:2a:cf:34:bd:96:01:85:76:a0:05:73:5b:e5"]
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          keys: [backend-build]
       # Checkout code from git
       # Add ssh keys with fingerprint
       # attach workspace
       - run:
           name: Install dependencies
           command: |
+            apk add --update ansible
             # Your code here
-            exit 1
+            #exit 1
       - run:
           name: Configure server
           command: |
+            pwd
+            cat .circleci/ansible/inventory.txt
+            echo ENVIRONMENT=production > "backend/.env"            
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+            echo NODE_ENV=production >> "backend/.env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
+            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml            
+            cat backend/.env
+            ls backend
             # Your code here
-            exit 1
+            #exit 1
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - project/backend
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       # Here's where you will add some code to rollback on failure      
 
   run-migrations:
