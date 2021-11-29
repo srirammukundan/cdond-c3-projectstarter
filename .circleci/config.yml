@@ -274,8 +274,10 @@ jobs:
           name: Run migrations
           working_directory: ./backend
           command: |
+            npm cache clean --force
             npm install            
             npm audit fix --force
+            npm run build
             npm run migrations >> migration_output.txt
             cat migration_output.txt
           #  npm audit fix --force 
