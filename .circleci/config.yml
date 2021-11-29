@@ -252,12 +252,20 @@ jobs:
       - image: circleci/node:13.8.0
       # Docker image here that supports NodeJS
     steps:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
       # Checkout code from git
       - run:
           name: Run migrations
+          working_directory: ./backend
           command: |
+            npm install            
+            npm run build
+            npm run migrations >> migration_output.txt
+            cat migration_output.txt
             # Your code here
-            exit 1
+            #exit 1
       - run:
           name: Send migration results to memstash
           command: |
