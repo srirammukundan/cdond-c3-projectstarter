@@ -52,10 +52,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontendbuild
-      - slack/notify: |
-          channel: nanodegree
-          event: fail
-          template: basic_fail_1
 
   build-backend:
     docker:
@@ -73,11 +69,11 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backendbuild
-      - slack/notify: |
-          channel: nanodegree
+      - slack/notify:
+          channel: $SLACK_DEFAULT_CHANNEL
           event: fail
           template: basic_fail_1
-
+          
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -94,10 +90,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: test4frontend
-      - slack/notify: |
-          channel: nanodegree
-          event: fail
-          template: basic_fail_1
 
   test-backend:
     docker:
@@ -115,10 +107,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: test4backend 
-      - slack/notify: |
-          channel: nanodegree
-          event: fail
-          template: basic_fail_1
 
   scan-frontend:
     docker:
@@ -137,10 +125,6 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: scanfrontend
-      - slack/notify: |
-          channel: nanodegree
-          event: fail
-          template: basic_fail_1
 
   scan-backend:
     docker:
@@ -159,10 +143,6 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: scanbackend
-      - slack/notify: |
-          channel: nanodegree
-          event: fail
-          template: basic_fail_1
 
   deploy-infrastructure:
     docker:
