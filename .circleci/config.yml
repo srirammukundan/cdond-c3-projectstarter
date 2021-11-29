@@ -200,6 +200,8 @@ jobs:
       # Docker image here that supports Ansible
     steps:
       - checkout
+      - restore_cache:
+          keys: [backend-build]
       - add_ssh_keys:
           fingerprints: ["aa:79:8f:07:da:96:16:74:7e:89:4a:61:52:9a:5a:c4"]
       - run:
@@ -218,6 +220,8 @@ jobs:
           name: Configure env variables
           command:  |
             pwd
+            cd ~/project/backend
+            ls -la
             touch backend/.env
             echo ENVIRONMENT=production >> "backend/.env"
             echo TYPEORM_CONNECTION=postgres >> "backend/.env"
