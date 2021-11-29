@@ -143,7 +143,7 @@ jobs:
 
   deploy-infrastructure:
     docker:
-      - image: circleci/node:13.8.0
+      - image: amazon/aws-cli
       # Docker image here that supports AWS CLI
     steps:
       - checkout
@@ -199,7 +199,7 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
       # Docker image here that supports Ansible
     steps:
       # Checkout code from git
@@ -237,7 +237,7 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: amazon/aws-cli
       # Docker image here that supports AWS CLI
     steps:
       # Checkout code from git
@@ -259,7 +259,7 @@ jobs:
                     
   deploy-backend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
       # Docker image here that supports Ansible
     steps:
       # Checkout code from git
@@ -277,7 +277,7 @@ jobs:
 
   smoke-test:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.11
       # Lightweight Docker image 
     steps:
       # Checkout code from git
@@ -301,7 +301,7 @@ jobs:
 
   cloudfront-update:
     docker:
-      - image: circleci/node:13.8.0
+      - image: amazon/aws-cli
     steps:
       # Checkout code from git
       - run:
@@ -316,7 +316,7 @@ jobs:
 
   cleanup:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/base:2020.01
       #  Docker image here
     steps:
       # Checkout code from git
