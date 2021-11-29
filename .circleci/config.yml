@@ -200,7 +200,6 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
-    ~/
       - add_ssh_keys:
           fingerprints: ["44:97:9b:ba:85:db:97:28:ec:c5:05:8a:b1:42:3e:3f"]
       - run:
