@@ -220,7 +220,7 @@ jobs:
           name: Configure env variables
           command:  |
             pwd
-            cd ~/project/backend
+            cd ~/project/
             ls -la
             touch backend/.env
             echo ENVIRONMENT=production >> "backend/.env"
