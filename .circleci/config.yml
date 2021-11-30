@@ -1,4 +1,36 @@
 version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+
+docvarnode: &dok_node
+    docker:
+      - image: circleci/node:13.8.0
+
+docvaraws: &dok_awscli
+    docker:
+      - image: amazon/aws-cli    
+
+docansibl: &dok_ansible
+    docker:
+      - image: python:3.7-alpine3.11 
+      
+executors:
+  node:
+    docker:
+      - image: circleci/node:13.8.0
+  python:
+    docker:
+      - image: python:3.9.0-alpine
+  aws:
+    docker:
+      - image: amazon/aws-cli
+      
+parameters:
+  workflow-id:
+    type: string
+    default: "${CIRCLE_WORKFLOW_ID}"
+    
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -53,8 +85,9 @@ commands:
             
 jobs:
   install-backend-dependencies:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
+    #docker:
+    #  - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -68,8 +101,9 @@ jobs:
 
 
   install-frontend-dependencies:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
+    #docker:
+    #  - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -82,8 +116,9 @@ jobs:
             - frontend/node_modules
             
   build-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
+    #docker:
+    #  - image: circleci/node:13.8.0
     steps:
       - checkout
       - attach_workspace:
@@ -91,11 +126,15 @@ jobs:
       #- restore_cache:
       #    keys: [frontend-build]
       - run:
-          name: Build front-end
-          command: |
-            cd frontend
-            npm install
-            npm run build
+          name: npm run build
+          working_directory: ./frontend
+          command: npm run build
+      #- run:
+      #    name: Build front-end
+      #    command: |
+      #      cd frontend
+      #      npm install
+      #      npm run build
       #      npm install
       #      npm run build
       # Your code here
@@ -105,8 +144,9 @@ jobs:
       #    key: frontend-build
 
   build-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
+    #docker:
+    #  - image: circleci/node:13.8.0
     steps:
       - checkout
       - attach_workspace:
@@ -114,11 +154,15 @@ jobs:
     #  - restore_cache:
     #      keys: [backend-build]
       - run:
-          name: Back-end build
-          command: |
-             cd backend
-             npm install
-             npm run build
+          name: npm run build
+          working_directory: ./backend
+          command: npm run build
+      #- run:
+      #    name: Back-end build
+      #    command: |
+      #       cd backend
+      #       npm install
+      #       npm run build
      #        npm install
      #        npm run build
      # Your code here
@@ -132,71 +176,122 @@ jobs:
       #    key: backend-build
 
   test-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
+    #docker:
+    #  - image: circleci/node:13.8.0
       # Docker image here
     steps:
       - checkout
-      - restore_cache:
-          keys: [frontend-test]
+      - attach_workspace:
+          at: .
       - run:
-          name: frontend test
-          command: |
-             cd frontend
-             npm install
-             npm run test
+          name: Install junit coverage reporter
+          working_directory: ./frontend
+          command: npm install --save-dev jest-junit
+      - run:
+          name: Run tests with JUnit as reporter
+          working_directory: ./frontend
+          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd && ls -la /tmp
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./test_results
+      - store_test_results:
+          path: ./frontend/test_results
+      - store_artifacts:
+          path: ./frontend/test_results
+          
+    #- restore_cache:
+    #    keys: [frontend-test]
+    #  - run:
+     #     name: frontend test
+      #    command: |
+       #      cd frontend
+        #     npm install
+         #    npm run test
                 
   test-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
+    #docker:
+    #  - image: circleci/node:13.8.0
       # Docker image here
     steps:
       - checkout
-      - restore_cache:
-          keys: [backend-test]
+      - attach_workspace:
+          at: .
       - run:
-          name: backend test
-          command: |
-             cd backend
-             npm install
-             npm run test
+          name: Install junit coverage reporter
+          working_directory: ./backend
+          command: npm install --save-dev jest-junit
+      - run:
+          name: Run tests with JUnit as reporter
+          working_directory: ./backend
+          command: npm test -- --ci --runInBand --reporters=default --reporters=jest-junit && pwd
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: ./test_results
+      - store_test_results:
+          path: ./backend/test_results
+      - store_artifacts:
+          path: ./backend/test_results
+          
+      #- restore_cache:
+      #    keys: [backend-test]
+      #- run:
+      #    name: backend test
+      #    command: |
+      #       cd backend
+      #       npm install
+      #       npm run test
             
   scan-frontend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
+    #docker:
+    #  - image: circleci/node:13.8.0
       # Docker image here
     steps:
       - checkout
-      - restore_cache:
-          keys: [frontend-scan]
+      - attach_workspace:
+          at: .
+      #- restore_cache:
+      #    keys: [frontend-scan]
       - run:
           name: frontend scan
-          command: |
-             cd frontend
-             npm install
-             npm audit fix --audit-level=critical --force
+          working_directory: ./frontend
+          command: 
+            npm install
+            npm audit fix --audit-level=critical  --force
+          #command: |
+          #   cd frontend
+          #   npm install
+          #   npm audit fix --audit-level=critical --force
        #      npm audit --audit-level=critical
 
   scan-backend:
-    docker:
-      - image: circleci/node:13.8.0
+    executor: node
+    #docker:
+    #  - image: circleci/node:13.8.0
       # Docker image here
     steps:
       - checkout
-      - restore_cache:
-          keys: [backend-scan]
+      - attach_workspace:
+          at: .
+      #- restore_cache:
+      #    keys: [backend-scan]
       - run:
           name: backend scan
-          command: |
-             cd backend
-             npm install
-             npm audit fix --audit-level=critical --force
+          working_directory: ./backend
+          command: npm audit fix --audit-level=critical  --force
+          #command: |
+          #   cd backend
+          #   npm install
+          #   npm audit fix --audit-level=critical --force
          #    npm audit --audit-level=critical
 
   deploy-infrastructure:
-    docker:
-      - image: amazon/aws-cli
+    <<: *dok_awscli
+    #docker:
+    #  - image: amazon/aws-cli
       # Docker image here that supports AWS CLI
+    environment: 
+      MY_STEP_NAME: "Deploy Infrastructure" 
     steps:
       - checkout
       # Checkout code from git
@@ -253,8 +348,11 @@ jobs:
       # Here's where you will add some code to rollback on failure      
 
   configure-infrastructure:
-    docker:
-      - image: python:3.7-alpine3.11
+    <<: *dok_ansible
+    environment: 
+      MY_STEP_NAME: "Configure Infrastructure" 
+    #docker:
+    #  - image: python:3.7-alpine3.11
       # Docker image here that supports Ansible
     steps:
       - checkout
@@ -303,8 +401,11 @@ jobs:
       # Here's where you will add some code to rollback on failure      
 
   run-migrations:
-    docker:
-      - image: circleci/node:13.8.0
+    <<: *dok_node
+    environment: 
+      MY_STEP_NAME: "Run Migrations"
+    #docker:
+    #  - image: circleci/node:13.8.0
       # Docker image here that supports NodeJS
     steps:
       - checkout
@@ -314,14 +415,19 @@ jobs:
       - run:
           name: Run migrations
           working_directory: ./backend
-          command: |
-            npm update
-            npm cache clean --force
+          command: |            
             npm install            
-            npm audit fix --force
             npm run build
             npm run migrations >> migration_output.txt
             cat migration_output.txt
+          #command: |
+          #  npm update
+          #  npm cache clean --force
+          #  npm install            
+          #  npm audit fix --force
+          #  npm run build
+          #  npm run migrations >> migration_output.txt
+          #  cat migration_output.txt
           #  npm audit fix --force 
           #  npm run build
           # Your code here
@@ -346,8 +452,9 @@ jobs:
      # Here's where you will add some code to rollback on failure      
 
   deploy-frontend:
-    docker:
-      - image: amazon/aws-cli
+    <<: *dok_ansible
+    #docker:
+    #  - image: amazon/aws-cli
       # Docker image here that supports AWS CLI
     steps:
       - checkout
@@ -366,8 +473,13 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
+            export API_URL=`cat ~/output.txt`
+            echo "API_URL: $API_URL"
+            echo ENVIRONMENT=production > "frontend/.env"
+            echo NODE_ENV=production >> "frontend/.env"
+            echo API_URL=$API_URL >> "frontend/.env"
+        #    export API_URL="http://${BACKEND_IP}:3030"
+        #    echo "${API_URL}"
       - run:
           name: Deploy frontend objects
           command: |
@@ -392,8 +504,11 @@ jobs:
       # Here's where you will add some code to rollback on failure      
                     
   deploy-backend:
-    docker:
-      - image: python:3.7-alpine3.11
+    <<: *dok_ansible
+    environment: 
+      MY_STEP_NAME: "Deploy backend"  
+    #docker:
+    #  - image: python:3.7-alpine3.11
       # Docker image here that supports Ansible
     steps:
       - checkout
@@ -439,8 +554,11 @@ jobs:
       # Here's where you will add some code to rollback on failure  
 
   smoke-test:
-    docker:
-      - image: python:3.7-alpine3.11
+    <<: *dok_ansible 
+    environment: 
+      MY_STEP_NAME: "Smoke Test"   
+    #docker:
+    #  - image: python:3.7-alpine3.11
       # Lightweight Docker image 
     steps:
       - checkout
@@ -490,18 +608,36 @@ jobs:
       # Here's where you will add some code to rollback on failure  
 
   cloudfront-update:
-    docker:
-      - image: amazon/aws-cli
+    <<: *dok_awscli
+    #docker:
+    #  - image: amazon/aws-cli
     steps:
-      # Checkout code from git
-      - run:
-          name: Install dependencies
-          command: |
-            # your code here
       - run:
           name: Update cloudfront distribution
           command: |
-            # your code here
+            export OLD_WORKFLOW_ID=$(aws cloudformation list-exports --query "Exports[?Name==\`WorkflowID\`].Value" --no-paginate --output text)
+            echo "OLD_WORKFLOW_ID: $OLD_WORKFLOW_ID."
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+              --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
+            printf '%s\n' "${STACKS[@]}"
+            aws cloudformation deploy \
+              --template-file .circleci/files/cloudfront.yml \
+              --parameter-overrides WorkflowID="udap-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --stack-name udapeople-prod-cloudfront
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - revert-migrations:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          
+      # Checkout code from git
+      #- run:
+      #    name: Install dependencies
+      #    command: |
+      #      # your code here
+      #- run:
+      #    name: Update cloudfront distribution
+      #    command: |
+      #      # your code here
       # Here's where you will add some code to rollback on failure  
 
   cleanup:
@@ -509,20 +645,37 @@ jobs:
       - image: cimg/base:2020.01
       #  Docker image here
     steps:
+      - checkout
+      - aws-cli/setup
       # Checkout code from git
       - run:
-          name: Get old stack workflow id
-          command: |
-            # your code here
-            export OldWorkflowID="the id here"
-            export STACKS=[] #put the list of stacks here
-      - run:
-          name: Remove old stacks and files
-          command: |
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-            then
-              # your code here
-            fi
+            name: Remove old stacks and files
+            command: |
+              export OldWorkflowID=$(aws cloudformation \
+                list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+                --no-paginate --output text)
+              export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+                --stack-status-filter CREATE_COMPLETE --no-paginate --output text))
+              echo "Old Workflow ID: ${OldWorkflowID}"
+              if [ "${OldWorkflowID}" != "<< pipeline.parameters.workflow-id >>" ]
+              then
+                aws s3 rm "s3://udapeople-udap-${CIRCLE_WORKFLOW_ID:5:7}" --recursive
+                aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID:5:7}"
+                aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID:5:7}"
+              fi
+      #- run:
+      #    name: Get old stack workflow id
+      #    command: |
+       # your code here
+     #       export OldWorkflowID="the id here"
+     #       export STACKS=[] #put the list of stacks here
+      #- run:
+       #   name: Remove old stacks and files
+       #   command: |
+       #     if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+       #     then
+       #       # your code here
+       #     fi
             
 
 workflows:
@@ -530,8 +683,12 @@ workflows:
     jobs:
       - install-backend-dependencies
       - install-frontend-dependencies
-      - build-frontend
-      - build-backend
+      - build-frontend:
+          requires:
+            - install-frontend-dependencies
+      - build-backend:
+          requires:
+            - install-backend-dependencies
       - test-frontend:
           requires: [build-frontend]
       - test-backend:
@@ -550,7 +707,7 @@ workflows:
       - run-migrations:
           requires: [configure-infrastructure]
       - deploy-frontend:
-          requires: [run-migrations]
+          requires: [run-migrations, deploy-backend]
       - deploy-backend:
           requires: [run-migrations]
       - smoke-test:
