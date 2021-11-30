@@ -293,9 +293,9 @@ jobs:
       - run:
           name: Deploy frontend objects
           command: |
+            cd frontend
             npm install
             npm run build
-            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       - revert-migrations
       - destroy-environment   
@@ -314,7 +314,11 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible openssh-client tar gzip curl nodejs npm
+            apk add --update ansible 
+            apk add --update tar                        
+            apk add --update gzip
+            apk add --update curl
+            pip3 install --upgrade pip 
             pip install awscli
       - run:
           name: Deploy backend
@@ -323,7 +327,7 @@ jobs:
             npm i
             npm run build
             cd ..
-            tar -C backend -czvf artifact.tar.gz .
+            tar -C backend -czvf backend.tar.gz .
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
