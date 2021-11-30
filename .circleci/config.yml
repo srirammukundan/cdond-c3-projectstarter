@@ -339,13 +339,14 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text >> inventory
+            cat .circleci/ansible/inventory.txt          
          #   BACKEND_AWS_PUBLIC_IP=$(aws ec2 describe-instances \
          #     --query 'Reservations[*].Instances[*].PublicIpAddress' \
          #     --output text)
          #   echo "http://$BACKEND_AWS_PUBLIC_IP:3030" > ~/output.txt
          #   echo "$BACKEND_AWS_PUBLIC_IP" >> .circleci/ansible/inventory.txt                 
          #   echo " ---------"
-            cat .circleci/ansible/inventory.txt
+               
          #   echo " ---------"
          #   cat ~/output.txt 
           # Your code here
