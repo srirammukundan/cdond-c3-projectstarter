@@ -401,11 +401,11 @@ jobs:
       # Here's where you will add some code to rollback on failure      
 
   run-migrations:
-    <<: *dok_node
-    environment: 
-      MY_STEP_NAME: "Run Migrations"
-    #docker:
-    #  - image: circleci/node:13.8.0
+    #<<: *dok_node
+    #environment: 
+    #  MY_STEP_NAME: "Run Migrations"
+    docker:
+      - image: cimg/node:17.1.0
       # Docker image here that supports NodeJS
     steps:
       - checkout
@@ -417,11 +417,10 @@ jobs:
           working_directory: ./backend
           command: |            
             npm install            
-            npm audit fix --force
             npm run build
-            npm audit fix --force
             npm run migrations >> migration_output.txt
             cat migration_output.txt
+          #npm audit fix --force
           #command: |
           #  npm update
           #  npm cache clean --force
