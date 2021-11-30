@@ -274,6 +274,7 @@ jobs:
           name: Run migrations
           working_directory: ./backend
           command: |
+            npm update
             npm cache clean --force
             npm install            
             npm audit fix --force
