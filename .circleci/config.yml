@@ -573,7 +573,7 @@ jobs:
             pip install awscli
           # your code here
       - run:
-          name: Get backend url
+          name: Backend smoke test
           command: |
             pwd
             cat .circleci/ansible/inventory.txt
@@ -581,10 +581,6 @@ jobs:
             cat ~/output.txt
             export API_URL=`cat ~/output.txt`
             echo "API_URL: $API_URL"
-          # your code here
-      - run:
-          name: Backend smoke test.
-          command: |            
             if curl "${API_URL}/api/status" | grep "ok"
             then
               return 0
@@ -592,6 +588,17 @@ jobs:
               echo "API_URL: $API_URL"
               return 1
             fi
+          # your code here
+      #- run:
+      #    name: Backend smoke test.
+      #    command: |            
+      #      if curl "${API_URL}/api/status" | grep "ok"
+      #      then
+      #        return 0
+      #      else
+      #        echo "API_URL: $API_URL"
+      #        return 1
+      #      fi
           #  if curl -s $API_URL/api/status
           # your code here
       - run:
