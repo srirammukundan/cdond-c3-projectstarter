@@ -355,7 +355,14 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            # your code here
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+                return 0
+            else
+                return 1
+            fi
       - run:
           name: Backend smoke test.
           command: |
