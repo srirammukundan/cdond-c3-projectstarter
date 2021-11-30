@@ -58,7 +58,7 @@ jobs:
             npm run build
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontendbuild
+          key: frontend-build
 
   build-backend:
     docker:
@@ -75,7 +75,7 @@ jobs:
               npm run build
       - save_cache:
           paths: [backend/node_modules]
-          key: backendbuild
+          key: backend-build
       - slack/notify:
           channel: $SLACK_DEFAULT_CHANNEL
           event: fail
@@ -96,7 +96,7 @@ jobs:
             npm run test
       - save_cache:
           paths: [frontend/node_modules]
-          key: test4frontend
+          key: frontend-test
 
   test-backend:
     docker:
@@ -113,7 +113,7 @@ jobs:
             npm run test
       - save_cache:
           paths: [backend/node_modules]
-          key: test4backend 
+          key: backend-test 
 
   scan-frontend:
     docker:
@@ -131,7 +131,7 @@ jobs:
             npm audit --audit-level=critical
       - save_cache:
           paths: [frontend/node_modules]
-          key: scanfrontend
+          key: frontend-scan
 
   scan-backend:
     docker:
@@ -149,7 +149,7 @@ jobs:
             npm audit --audit-level=critical
       - save_cache:
           paths: [backend/node_modules]
-          key: scanbackend
+          key: backend-scan
 
   deploy-infrastructure:
     docker:
@@ -270,8 +270,6 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -281,15 +279,20 @@ jobs:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
+      - attach_workspace:
+          at: ~/
       - run:
           name: Get backend url
           command: |
-            BACKEND_IP=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/backendip)
-            export API_URL="http://${BACKEND_IP}:3030"
+            BACKEND_IP=$(aws cloudformation describe-stacks \
+              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
+              --query 'Stacks[0].Outputs[0].OutputValue' \
+              --output text)
+            export API_URL="${BACKEND_IP}:3030"
             echo "${API_URL}"
-            echo "$API_URL" >> "backend/.env"
+            echo "API_URL=$API_URL" > frontend/.env
             npm run build
-                       
+                      
       - run:
           name: Deploy frontend objects
           command: |
@@ -307,10 +310,6 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints: ["44:97:9b:ba:85:db:97:28:ec:c5:05:8a:b1:42:3e:3f"]
-      - attach_workspace:
-          at: ~/
-      - restore_cache:
-          key: backend-build
       - run:
           name: Install dependencies
           command: |
@@ -320,14 +319,16 @@ jobs:
             apk add --update curl
             pip3 install --upgrade pip 
             pip install awscli
+      - attach_workspace:
+          at: ~/
+      - restore_cache:
+          key: backend-build
       - run:
           name: Deploy backend
           command: |
-            cd backend
             npm i
             npm run build
-            cd ..
-            tar -C backend -czvf backend.tar.gz .
+            tar -C backend -czvf backend.tar.gz ./backend/
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
