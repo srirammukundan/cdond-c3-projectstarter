@@ -312,6 +312,14 @@ jobs:
               # --parameter-overrides ID="your workflow id"  
               #exit 1
       - run:
+          name: Save backend URL in memstash
+          command: |
+            BACKEND_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
+            curl -H "Content-Type: text/plain" -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cd69a88" --request PUT --data "http://$BACKEND_IP:3030" https://api.memstash.io/values/BACKEND_URL
+      - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
@@ -327,15 +335,19 @@ jobs:
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            BACKEND_AWS_PUBLIC_IP=$(aws ec2 describe-instances \
+            aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text)
-            echo "http://$BACKEND_AWS_PUBLIC_IP:3030" > ~/output.txt
-            echo "$BACKEND_AWS_PUBLIC_IP" >> .circleci/ansible/inventory.txt                 
-            echo " ---------"
+              --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text >> inventory
+         #   BACKEND_AWS_PUBLIC_IP=$(aws ec2 describe-instances \
+         #     --query 'Reservations[*].Instances[*].PublicIpAddress' \
+         #     --output text)
+         #   echo "http://$BACKEND_AWS_PUBLIC_IP:3030" > ~/output.txt
+         #   echo "$BACKEND_AWS_PUBLIC_IP" >> .circleci/ansible/inventory.txt                 
+         #   echo " ---------"
             cat .circleci/ansible/inventory.txt
-            echo " ---------"
-            cat ~/output.txt 
+         #   echo " ---------"
+         #   cat ~/output.txt 
           # Your code here
             #exit 1
       - persist_to_workspace:
@@ -360,15 +372,17 @@ jobs:
           fingerprints: ["ed:53:cc:2a:cf:34:bd:96:01:85:76:a0:05:73:5b:e5"]
       - attach_workspace:
           at: ~/
-      - restore_cache:
-          keys: [backend-build]
+      #- restore_cache:
+      #    keys: [backend-build]
       # Checkout code from git
       # Add ssh keys with fingerprint
       # attach workspace
       - run:
           name: Install dependencies
+          working_directory: ./.circleci/ansible
           command: |
             apk add --update ansible
+            ansible --version
          # Your code here
             #exit 1
       - run:
@@ -409,8 +423,18 @@ jobs:
       # Docker image here that supports NodeJS
     steps:
       - checkout
-      - restore_cache:
-          keys: [backend-build]
+      #- restore_cache:
+      #    keys: [backend-build]
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install AWS CLI dependencies
+          working_directory: /tmp
+          command: |
+            sudo apt-get update && sudo apt-get install -yy less
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       # Checkout code from git
       - run:
           name: Run migrations
@@ -463,31 +487,49 @@ jobs:
           at: ~/
       # Checkout code from git
       - run:
-          name: Install dependencies
+          name: Install AWS CLI dependencies
+          working_directory: /tmp
           command: |
-            apk add --update curl nodejs npm
-            apk add --update curl tar
-            npm install webpack-dev-server -g
-            npm install
-            pip install awscli
+            sudo apt-get update && sudo apt-get install -yy less
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+      #- run:
+      #    name: Install dependencies
+      #    command: |
+      #      apk add --update curl nodejs npm
+      #      apk add --update curl tar
+      #      npm install webpack-dev-server -g
+      #      npm install
+      #      pip install awscli
           # your code here
       - run:
-          name: Get backend url
+          name: Rebuild frontend with backend API Url
+          working_directory: ./frontend
           command: |
             export API_URL=`cat ~/output.txt`
             echo "API_URL: $API_URL"
-            echo ENVIRONMENT=production > "frontend/.env"
-            echo NODE_ENV=production >> "frontend/.env"
-            echo API_URL=$API_URL >> "frontend/.env"
+            npm run build
+            echo "update start"
+            npm update
+            npm audit fix --force
+      #- run:
+      #    name: Get backend url
+      #    command: |
+      #      export API_URL=`cat ~/output.txt`
+      #      echo "API_URL: $API_URL"
+      #      echo ENVIRONMENT=production > "frontend/.env"
+      #      echo NODE_ENV=production >> "frontend/.env"
+      #      echo API_URL=$API_URL >> "frontend/.env"
         #    export API_URL="http://${BACKEND_IP}:3030"
         #    echo "${API_URL}"
-      - run:
-          name: Deploy frontend objects
-          command: |
-            cd ~/project/frontend
-            npm i
-            npm install typescript@rc
-            npm run build
+      #- run:
+      #   name: Deploy frontend objects
+      #    command: |
+      #      cd ~/project/frontend
+      #      npm i
+      #      npm install typescript@rc
+      #      npm run build
       - run:
           name: copy frontend package to aws s3 bucket
           command: |
@@ -541,12 +583,18 @@ jobs:
             mv backend.tar.gz ~/project/.circleci/ansible/roles/deploy/files/
       - run:
           name: Deploy backend
+          working_directory: ./.circleci/ansible
           command: |
-            cd ~/project/backend
-            ansible-galaxy install weareinteractive.environment
-            cat ~/project/.circleci/ansible/inventory.txt
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/node-explorer.yml
+            cat inventory
+            ansible-playbook -i inventory deploy-backend.yml -vv
+      #- run:
+      #    name: Deploy backend
+      #    command: |
+      #      cd ~/project/backend
+      #      ansible-galaxy install weareinteractive.environment
+      #      cat ~/project/.circleci/ansible/inventory.txt
+      #      ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
+      #      ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/node-explorer.yml
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
