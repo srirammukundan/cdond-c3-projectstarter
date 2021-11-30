@@ -417,7 +417,9 @@ jobs:
           working_directory: ./backend
           command: |            
             npm install            
+            npm audit fix --force
             npm run build
+            npm audit fix --force
             npm run migrations >> migration_output.txt
             cat migration_output.txt
           #command: |
