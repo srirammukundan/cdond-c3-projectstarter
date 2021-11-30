@@ -247,19 +247,20 @@ jobs:
       - run:
           name: Run Migrations
           command: |
+            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cd backend
-            export TYPEORM_HOST=$(cat ../.circleci/ansible/backend_ip)
-            export TYPEORM_USERNAME=$(echo $TYPEORM_USERNAME)
-            export TYPEORM_PASSWORD=$(echo $TYPEORM_PASSWORD)
-            export TYPEORM_DATABASE=$(echo $TYPEORM_DATABASE)
             npm run migrations > migration_dump.txt
-      - run:
-          name: Send migration results to memstash
-          command: |
-            cd backend
-            if grep -q "has been executed successfully" migrations_dump.txt
+            if ( grep -q "has been executed successfully" migration_dump.txt ) 
             then
-              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+              echo "Migrations were succesful!"
+              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "success" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
+            else
+              echo "Migrations encountered failure!"
+              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "fail" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
             fi
       - revert-migrations
       - destroy-environment
@@ -286,7 +287,7 @@ jobs:
             BACKEND_IP=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/backendip)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-            echo "$API_URL" >> ".env"
+            echo "$API_URL" >> "backend/.env"
             npm run build
                        
       - run:
