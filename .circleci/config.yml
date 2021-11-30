@@ -259,7 +259,6 @@ jobs:
             cd .circleci/ansible
             ls -al
             cat inventory.txt
-            no_output_timeout: 20m
             ansible-playbook -i inventory.txt configure-server.yml
             #exit 1
       - persist_to_workspace:
