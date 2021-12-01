@@ -58,6 +58,7 @@ commands:
     steps:
       - run:
           name: Revert migrations
+          when: on_fail
           working_directory: ./backend
           command: |
             status=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdasdfg" --request GET https://api.memstash.io/values/migration_status__<<parameters.workflow_id>>)
@@ -318,7 +319,9 @@ jobs:
 
 
   deploy-frontend:
-    executor: node
+    docker:
+      - image: amazon/aws-cli
+    #executor: node
     steps:
       - checkout
       - attach_workspace:
