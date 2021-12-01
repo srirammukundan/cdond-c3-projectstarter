@@ -476,10 +476,10 @@ jobs:
           name: Store old WorkflowID in memstash for cleanup phase
           working_directory: ./.circleci/files
           command: |
-            WorkflowID=$(aws cloudformation \
-              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+            WorkflowID1=$(aws cloudformation \
+              list-exports --query "Exports[?Name==\`WorkflowID1\`].Value" \
               --no-paginate --output text)
-            curl -H "Content-Type: text/plain" -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdhjikj" --request PUT --data "$WorkflowID" https://api.memstash.io/values/WorkflowID
+            curl -H "Content-Type: text/plain" -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdhjikj" --request PUT --data "$WorkflowID1" https://api.memstash.io/values/WorkflowID1
       - run:
           name: Update cloudfront distribution
           working_directory: ./.circleci/files
@@ -487,7 +487,7 @@ jobs:
             aws cloudformation deploy \
               --template-file cloudfront.yml \
               --stack-name udapeople-cloudfront-production \
-              --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+              --parameter-overrides WorkflowID1="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
       - revert_migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
@@ -501,15 +501,15 @@ jobs:
       - run:
           name: Clean up old environment
           command: |
-            OldWorkflowID=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdhjikj" --request GET https://api.memstash.io/values/WorkflowID)
-            CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
-            if [[ "$CurrentWorkflowID" != "$OldWorkflowID" ]]
+            OldWorkflowID1=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdhjikj" --request GET https://api.memstash.io/values/WorkflowID1)
+            CurrentWorkflowID1=${CIRCLE_WORKFLOW_ID:0:7}
+            if [[ "$CurrentWorkflowID1" != "$OldWorkflowID1" ]]
             then
-              echo "$OldWorkflowID!=$CurrentWorkflowID => will delete old version"
-              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              echo "$OldWorkflowID1!=$CurrentWorkflowID1 => will delete old version"
+              aws s3 rm "s3://udapeople-${OldWorkflowID1}" --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID1}"
             else
-              echo "$OldWorkflowID==$CurrentWorkflowID => nothing needs to be done..."
+              echo "$OldWorkflowID1==$CurrentWorkflowID1 => nothing needs to be done..."
             fi
           environment:
             TERM: xterm-256color
