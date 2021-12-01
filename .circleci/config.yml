@@ -26,8 +26,6 @@ commands:
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
-      workflow_id:
-        type: string      
     steps:
       - restore_cache:
           key: backend-build
@@ -38,7 +36,7 @@ commands:
             # Your Memstash GET URL code goes here
             # See an example below
             SUCCESS=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
-            if (( $SUCCESS == 1 ));
+            if (( $SUCCESS == "success" ));
             then
               cd ~/project/backend
               npm install
