@@ -256,7 +256,7 @@ jobs:
             cd backend
             npm run migrations > migration_dump.txt
             cat migration_dump.txt
-            if ( grep -q "No migrations are pending" migration_dump.txt ) 
+            if ( grep -q "Migrations were succesful" migration_dump.txt ) 
             then
               echo "Migrations were succesful!"
               curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "success" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID

@@ -23,12 +23,12 @@
       update_cache: yes
       
   - name: "install pm2"
-  become: yes
-  npm:
-    name: pm2
-    global: yes
-    production: yes
-    state: present
+    become: yes
+    npm:
+      name: pm2
+      global: yes
+      production: yes
+      state: present
 
 - name: "pm2 stop default"
   become: yes
