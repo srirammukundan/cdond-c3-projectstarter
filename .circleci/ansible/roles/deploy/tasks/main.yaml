@@ -8,14 +8,14 @@
   - name: "Copy backend build folder to EC2"
     become: yes
     unarchive:
-      src: ../../backend/dist/backend.tar.gz
+      src: ../../artefacts.tar.gz
       dest: /home/ubuntu/myapp/
       owner: ubuntu
 
   - name: "Copy package.json to EC2"
     become: yes
     copy:
-      src: ../../backend/node_modules/package.json
+      src: ../../frontend/package.json
       dest: /home/ubuntu/myapp/
       owner: ubuntu
 
