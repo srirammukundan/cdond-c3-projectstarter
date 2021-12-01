@@ -295,6 +295,8 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
+            npm install webpack-dev-server -g
+          # npm i -g browserslist caniuse-lite
             npm run build
             cd dist
             aws s3 cp * s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
@@ -324,7 +326,7 @@ jobs:
       - run:
           name: Deploy backend
           command: |
-            tar -C backend -czvf artefacts.tar.gz 
+            tar -czvf artefacts.tar.gz ./backend
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
