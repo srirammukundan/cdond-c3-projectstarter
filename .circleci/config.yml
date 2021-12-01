@@ -195,9 +195,9 @@ jobs:
             ls -lrt
             cat inventory.txt
       - persist_to_workspace:
-          root: ~/
+          root: ~/project/.circleci
           paths:
-            - .circleci/ansible/inventory.txt
+            - ansible/inventory.txt
       - destroy-environment
 
   configure-infrastructure:
@@ -222,7 +222,7 @@ jobs:
           name: Configure server
           command: |
             cd .circleci/ansible
-            ansible-playbook -i inventory.txt configure-server.yml
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt configure-server.yml
       - destroy-environment
          
 
@@ -325,7 +325,7 @@ jobs:
             pip3 install --upgrade pip 
             pip install awscli
       - attach_workspace:
-          at: ~/
+          at: ~/project/.circleci
       - restore_cache:
           key: backend-build
       - run:
@@ -334,8 +334,8 @@ jobs:
             tar -czvf artefacts.tar.gz ./backend
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
-            cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            cat ~/project/.circleci/ansible/inventory.txt
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt deploy-backend.yml
       - revert-migrations
       - destroy-environment
       
@@ -384,7 +384,8 @@ jobs:
             else
               return 1
             fi
-  
+
+
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
