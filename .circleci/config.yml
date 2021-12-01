@@ -519,6 +519,7 @@ workflows:
           
       ## INFRASTRUCTURE--
       - deploy-infrastructure:
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
               only:
@@ -528,29 +529,20 @@ workflows:
             - deploy-infrastructure
       - run-migrations:
           requires:
-            - test-backend
-            - test-frontend
-            - scan-backend
-            - scan-frontend
             - configure-infrastructure
-          filters:
-            branches:
-              only:
-                - master
       - deploy-backend:
           requires:
             - run-migrations
       - deploy-frontend:
           requires:
             - run-migrations
+            - deploy-backend
       - smoke-test:
           requires:
             - deploy-backend
             - deploy-frontend
       - cloudfront-update:
           requires:
-             - deploy-backend
-             - deploy-frontend
              - smoke-test
       #- cloudfront-update:
       #    requires:
