@@ -238,6 +238,7 @@ jobs:
           name: Install AWS CLI
           command: |
             cd backend
+            npm install webpack-dev-server -g
             npm install
             sudo apt-get update && sudo apt-get install -yy less
             sudo apt-get install unzip -y
@@ -295,8 +296,6 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
-            npm install webpack-dev-server -g
-          # npm i -g browserslist caniuse-lite
             npm run build
             cd dist
             aws s3 cp * s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
