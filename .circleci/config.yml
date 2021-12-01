@@ -341,16 +341,20 @@ jobs:
           command: |
             export API_URL=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cd7gbhg" --request GET https://api.memstash.io/values/BACKEND_URL)
             echo "${API_URL}"
-            echo ENVIRONMENT=production > "frontend/.env"
-            echo NODE_ENV=production >> "frontend/.env"
-            echo API_URL=$API_URL >> "frontend/.env"
-      - run:
-          name: Deploy frontend objects
-          command: |
-            cd ~/project/frontend
-            npm i
-            npm install typescript@rc
             npm run build
+            echo "update start"
+            npm update
+            npm audit fix --force
+#            echo ENVIRONMENT=production > "frontend/.env"
+#            echo NODE_ENV=production >> "frontend/.env"
+#            echo API_URL=$API_URL >> "frontend/.env"
+#      - run:
+#          name: Deploy frontend objects
+#          command: |
+#            cd ~/project/frontend
+#            npm i
+#            npm install typescript@rc
+#            npm run build
       - run:
           name: Deploy frontend objects to S3
           working_directory: ./frontend
