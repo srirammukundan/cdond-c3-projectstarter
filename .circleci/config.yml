@@ -267,14 +267,13 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: circleci/node:10.16.5
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
             cd frontend
-            npm install webpack-dev-server -g
             npm install
             sudo apt-get update && sudo apt-get install -yy less
             sudo apt-get install unzip -y
@@ -292,11 +291,9 @@ jobs:
             export API_URL="${BACKEND_IP}:3030"
             echo "${API_URL}"
             echo "API_URL=$API_URL" > frontend/.env
-                                  
       - run:
           name: Deploy frontend objects
           command: |
-            cd frontend
             npm run build
             cd dist
             aws s3 cp * s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
