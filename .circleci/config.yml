@@ -319,32 +319,38 @@ jobs:
 
 
   deploy-frontend:
-    #<<: *dok_ansible
-    docker:
-      - image: circleci/aws-cli@2.0.3
+    <<: *dok_ansible
+    #docker:
+    #  - image: circleci/aws-cli@2.0.3
     #executor: node
     steps:
       - checkout
       - attach_workspace:
           at: ~/
       - run:
-          name: Install AWS CLI dependencies
-          working_directory: /tmp
+          name: Install dependencies
           command: |
-            sudo apt-get update && sudo apt-get install -yy less
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
+            apk add --update curl nodejs npm
+            apk add --update curl tar
+            npm install webpack-dev-server -g
+            npm install
+            pip install awscli
       - run:
           name: Rebuild frontend with backend API Url
           working_directory: ./frontend
           command: |
             export API_URL=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cd7gbhg" --request GET https://api.memstash.io/values/BACKEND_URL)
             echo "${API_URL}"
+            echo ENVIRONMENT=production > "frontend/.env"
+            echo NODE_ENV=production >> "frontend/.env"
+            echo API_URL=$API_URL >> "frontend/.env"
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd ~/project/frontend
+            npm i
+            npm install typescript@rc
             npm run build
-            echo "update start"
-            npm update
-            npm audit fix --force
       - run:
           name: Deploy frontend objects to S3
           working_directory: ./frontend
