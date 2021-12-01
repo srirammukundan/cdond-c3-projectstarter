@@ -274,9 +274,6 @@ jobs:
           name: Install dependencies
           command: |
             cd frontend
-            npm install
-            npm update
-            npx browserslist@latest --update-db
             sudo apt-get update && sudo apt-get install -yy less
             sudo apt-get install unzip -y
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -293,10 +290,17 @@ jobs:
             export API_URL="${BACKEND_IP}:3030"
             echo "${API_URL}"
             echo "API_URL=$API_URL" > frontend/.env
+            echo "BROWSERSLIST_IGNORE_OLD_DATA=1" >> frontend/.env
       - run:
           name: Deploy frontend objects
           command: |
             cd frontend
+            npm install
+            npm update
+            npm cache clean --force
+            npm uninstall caniuse-lite browserslist
+            npm install caniuse-lite browserslist
+            npm install caniuse-lite@latest --save
             npm run build
             cd dist
             aws s3 cp * s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
