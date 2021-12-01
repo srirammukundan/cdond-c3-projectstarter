@@ -276,12 +276,12 @@ jobs:
       - checkout
       - restore_cache:
           keys: [backend-build]
-      - run:
-          name: Install dependencies
-          command: |
-            sudo apt update
-            sudo apt upgrade -y
-            sudo apt install -y awscli
+    #  - run:
+    #      name: Install dependencies
+    #      command: |
+    #        sudo apt update
+    #        sudo apt upgrade -y
+    #        sudo apt install -y awscli
       - run:
           name: Run migrations
           no_output_timeout: 30m
@@ -300,7 +300,7 @@ jobs:
             touch migrations_result.txt
             ls
             npm i
-            npm run migrations > migration_output.txt
+            npm run migrations > migrations_result.txt
             cat migrations_result.txt
           # Your code here
           # exit 1
