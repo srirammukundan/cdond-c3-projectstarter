@@ -35,8 +35,8 @@ commands:
           command: |
             # Your Memstash GET URL code goes here
             # See an example below
-            SUCCESS=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
-            if (( $SUCCESS == "success" ));
+            export SUCCESS=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            if (( "$SUCCESS" == success ));
             then
               cd ~/project/backend
               npm install
@@ -258,10 +258,8 @@ jobs:
             if ( grep -q "has been executed successfully\|No migrations are pending" migration_dump.txt ) 
             then
               curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "success" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
-              $(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID)
             else
               curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "fail" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
-              $(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID)
             fi
       - revert-migrations
       - destroy-environment
@@ -367,7 +365,7 @@ jobs:
               --output text)
             export API_URL="${BACKEND_IP}:3030"
             echo "${API_URL}"
-            curl "$API_URL/api/status"
+            curl "${API_URL}/api/status"
             if curl "${API_URL}/api/status" | grep "ok"
             then
                 return 0
