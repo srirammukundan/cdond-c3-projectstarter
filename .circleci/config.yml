@@ -241,7 +241,7 @@ jobs:
           paths:
             - .circleci/ansible/inventory
       - destroy_environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       #    when: on_fail
 
 
@@ -268,7 +268,7 @@ jobs:
             cat inventory
             ansible-playbook -i inventory configure-server.yml
       - destroy_environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
     #      when: on_fail
 
 
@@ -309,7 +309,7 @@ jobs:
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}" 
       - destroy_environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
   #        when: on_fail
 
 
@@ -347,10 +347,10 @@ jobs:
           paths:
             - frontend/dist
       - destroy_environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
     #      when: on_fail
       - revert_migrations:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
    #       when: on_fail
 
 
@@ -386,11 +386,11 @@ jobs:
             cat inventory
             ansible-playbook -i inventory deploy-backend.yml -vv
       - destroy_environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+#          when: on_fail
       - revert_migrations:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+#          when: on_fail
 
   smoke-test:
     executor: python
@@ -431,10 +431,10 @@ jobs:
             fi
      
       - destroy_environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
     #      when: on_fail
       - revert_migrations:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
      #     when: on_fail
 
 
@@ -466,7 +466,7 @@ jobs:
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
               --tags project=udapeople
       - revert_migrations:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
     #      when: on_fail
 
 
