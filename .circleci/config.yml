@@ -38,7 +38,7 @@ commands:
             export SUCCESS=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
             if (( "$SUCCESS" == success ));
             then
-              cd ~/project/backend
+              cd backend
               npm install
               npm run migration:revert
             fi
@@ -195,9 +195,9 @@ jobs:
             ls -lrt
             cat inventory.txt
       - persist_to_workspace:
-          root: ~/project/.circleci
+          root: ~/
           paths:
-            - ansible/inventory.txt
+            - .circleci/ansible/inventory.txt
       - destroy-environment
 
   configure-infrastructure:
@@ -222,7 +222,7 @@ jobs:
           name: Configure server
           command: |
             cd .circleci/ansible
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt configure-server.yml
+            ansible-playbook -i inventory.txt configure-server.yml
       - destroy-environment
          
 
@@ -261,6 +261,8 @@ jobs:
             else
               curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "fail" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
             fi
+            export MEMSTASH_VALUE=$(curl -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request GET https://api.memstash.io/values/BACKEND_URL)
+            echo "${MEMSTASH_VALUE}"
       - revert-migrations
       - destroy-environment
 
@@ -332,8 +334,8 @@ jobs:
             tar -czvf artefacts.tar.gz ./backend
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
-            cat ~/project/.circleci/ansible/inventory.txt
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt deploy-backend.yml
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
       - revert-migrations
       - destroy-environment
       
@@ -382,9 +384,7 @@ jobs:
             else
               return 1
             fi
-      - revert-migrations
-      - destroy-environment
-
+  
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
