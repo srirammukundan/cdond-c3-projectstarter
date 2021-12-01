@@ -275,7 +275,9 @@ jobs:
 
 
   run-migrations:
-    executor: node
+    docker:
+      - image: cimg/node:17.2.0
+    #executor: node
     steps:
       - checkout
       - attach_workspace:
