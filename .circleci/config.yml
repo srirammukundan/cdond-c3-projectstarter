@@ -26,7 +26,8 @@ commands:
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
     parameters:
-      # Add parameter here     
+      workflow_id:
+        type: string      
     steps:
       - restore_cache:
           key: backend-build
@@ -34,12 +35,14 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            SUCCESS=`curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}`
-            if(( $SUCCESS==1 )); 
+            # Your Memstash GET URL code goes here
+            # See an example below
+            SUCCESS=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            if (( $SUCCESS == 1 ));
             then
               cd ~/project/backend
               npm install
-              npm run migrations:revert
+              npm run migration:revert
             fi
             
 jobs:
@@ -254,8 +257,7 @@ jobs:
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cd backend
             npm run migrations > migration_dump.txt
-            cat migration_dump.txt
-            if ( grep -q "has been executed successfully" migration_dump.txt ) 
+            if ( grep -q "has been executed successfully\|No migrations are pending" migration_dump.txt ) 
             then
               curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "success" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
               $(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID)
@@ -287,7 +289,10 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            BACKEND_IP=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID)
+            export BACKEND_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
             export API_URL="${BACKEND_IP}:3030"
             echo "${API_URL}"
             echo "API_URL=$API_URL" > frontend/.env
@@ -358,7 +363,10 @@ jobs:
           name: Backend smoke test.
           command: |
             cd backend
-            BACKEND_IP=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID)
+            export BACKEND_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
             export API_URL="${BACKEND_IP}:3030"
             echo "${API_URL}"
             curl "$API_URL/api/status"
