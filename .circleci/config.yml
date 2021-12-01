@@ -242,7 +242,7 @@ jobs:
             - .circleci/ansible/inventory
       - destroy_environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+      #    when: on_fail
 
 
   configure-infrastructure:
@@ -269,7 +269,7 @@ jobs:
             ansible-playbook -i inventory configure-server.yml
       - destroy_environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+    #      when: on_fail
 
 
   run-migrations:
@@ -310,7 +310,7 @@ jobs:
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}" 
       - destroy_environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+  #        when: on_fail
 
 
   deploy-frontend:
@@ -348,10 +348,10 @@ jobs:
             - frontend/dist
       - destroy_environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+    #      when: on_fail
       - revert_migrations:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+   #       when: on_fail
 
 
   deploy-backend:
@@ -432,10 +432,10 @@ jobs:
      
       - destroy_environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+    #      when: on_fail
       - revert_migrations:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+     #     when: on_fail
 
 
   cloudfront-update:
@@ -467,7 +467,7 @@ jobs:
               --tags project=udapeople
       - revert_migrations:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+    #      when: on_fail
 
 
   cleanup:
