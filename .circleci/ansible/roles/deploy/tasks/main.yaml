@@ -1,18 +1,9 @@
 ---
-  - name: Create application folder
-    become: yes
-    file:
-      path: /home/ubuntu/myapp
-      state: directory
-      owner: ubuntu
-      group: ubuntu
-      mode: 0777 
-
   - name: "Copy backend build folder to EC2"
     become: yes
     unarchive:
       src: ../../artefacts.tar.gz
-      dest: /home/ubuntu/myapp/
+      dest: /home/ubuntu/
       owner: ubuntu
       group: ubuntu
       mode: 0777 
@@ -21,33 +12,45 @@
     become: yes
     copy:
       src: ../../frontend/package.json
-      dest: /home/ubuntu/myapp/
+      dest: /home/ubuntu/
       owner: ubuntu
-      group: ubuntu
-      mode: 0777 
-      cmd: ls -lrt
-
-  - name: "NPM Install"
-    shell:
-      become: yes
-      chdir: /home/ubuntu/myapp
-      owner: ubuntu
-      cmd: npm install
       
-  - name: "Start backend with pm2"
+  - name: "NPM Install"
     become: yes
-    shell: |
-      cd /home/ubuntu/myapp
-      pm2 start main.js --name app
-    environment:
-      ENVIRONMENT: production
-      TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
-      TYPEORM_MIGRATIONS_DIR: "./migrations"
-      TYPEORM_MIGRATIONS: "./migrations/*.js"
-      TYPEORM_ENTITIES: "./modules/domain/**/*.entity.js"
-      TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
-      TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
-      TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
-      TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
-      TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
+    apt:
+      name: ["nodejs", "npm"]
+      state: latest
+      update_cache: yes
+      
+  - name: "install pm2"
+  become: yes
+  npm:
+    name: pm2
+    global: yes
+    production: yes
+    state: present
+
+- name: "pm2 stop default"
+  become: yes
+  command: pm2 stop default
+  args:
+    chdir: /home/ubuntu/
+  ignore_errors: yes
+
+- name: "pm2 start npm -- start"
+  become: yes
+  command: pm2 start npm -- start
+  args:
+    chdir: /home/ubuntu/
+  environment:
+    ENVIRONMENT: production
+    TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
+    TYPEORM_MIGRATIONS_DIR: "./migrations"
+    TYPEORM_MIGRATIONS: "./migrations/*.js"
+    TYPEORM_ENTITIES: "./modules/domain/**/*.entity.js"
+    TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
+    TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
+    TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
+    TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
+    TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
 

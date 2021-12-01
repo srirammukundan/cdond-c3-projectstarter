@@ -255,11 +255,14 @@ jobs:
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cd backend
             npm run migrations > migration_dump.txt
-            if ( grep -q "No migrations are pending" migration_dump.log ) 
+            cat migration_dump.txt
+            if ( grep -q "No migrations are pending" migration_dump.txt ) 
             then
-              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "0" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
+              echo "Migrations were succesful!"
+              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "success" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
             else
-              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "1" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
+              echo "Migrations encountered failure!"
+              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "fail" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
             fi
             export MEMSTASH_VALUE=$(curl -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request GET https://api.memstash.io/values/BACKEND_URL)
             echo "${MEMSTASH_VALUE}"
