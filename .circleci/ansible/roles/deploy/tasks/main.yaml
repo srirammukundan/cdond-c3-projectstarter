@@ -21,9 +21,10 @@
 
   - name: "NPM Install"
     shell:
-      cmd: npm install --production
       chdir: /home/ubuntu/myapp
-
+      owner: ubuntu
+      cmd: sudo apt-get install nodejs
+      
   - name: "Start backend with pm2"
     become: yes
     shell: |
