@@ -357,9 +357,11 @@ jobs:
           name: Backend smoke test.
           command: |
             cd backend
-            export BACKEND_URL=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID)
-            curl "$BACKEND_URL/api/status"
-            if curl "${BACKEND_URL}/api/status" | grep "ok"
+            BACKEND_IP=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID)
+            export API_URL="${BACKEND_IP}:3030"
+            echo "${API_URL}"
+            curl "$API_URL/api/status"
+            if curl "${API_URL}/api/status" | grep "ok"
             then
                 return 0
             else
