@@ -4,6 +4,9 @@
     file:
       path: /home/ubuntu/myapp
       state: directory
+      owner: ubuntu
+      group: ubuntu
+      mode: 0777 
 
   - name: "Copy backend build folder to EC2"
     become: yes
@@ -11,19 +14,25 @@
       src: ../../artefacts.tar.gz
       dest: /home/ubuntu/myapp/
       owner: ubuntu
-
+      group: ubuntu
+      mode: 0777 
+      
   - name: "Copy package.json to EC2"
     become: yes
     copy:
       src: ../../frontend/package.json
       dest: /home/ubuntu/myapp/
       owner: ubuntu
+      group: ubuntu
+      mode: 0777 
+      cmd: ls -lrt
 
   - name: "NPM Install"
     shell:
+      become: yes
       chdir: /home/ubuntu/myapp
       owner: ubuntu
-      cmd: sudo apt-get install nodejs
+      cmd: npm install
       
   - name: "Start backend with pm2"
     become: yes

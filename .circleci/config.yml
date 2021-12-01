@@ -255,7 +255,7 @@ jobs:
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
             cd backend
             npm run migrations > migration_dump.txt
-            if ( grep -q "has been executed successfully" migration_dump.log ) || ( grep -q "No migrations are pending" migration_dump.log ) 
+            if ( grep -q "No migrations are pending" migration_dump.log ) 
             then
               curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "0" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
             else
@@ -380,9 +380,9 @@ jobs:
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/index.html"
             if curl -s ${URL} | grep "Welcome"  
             then
-              return 0
-            else
               return 1
+            else
+              return 0
             fi
 
 
