@@ -45,6 +45,13 @@ commands:
             #  Add revert code here. You can find this in the Getting Started section.
               exit 1
             fi
+            
+            if(( $FAIL==0 ));
+            then
+              npm run migration:revert
+              echo "Print failure and exit
+              exit 0
+            fi
 
 jobs:
   build-frontend:
@@ -300,7 +307,7 @@ jobs:
             touch migrations_result.txt
             ls
             npm i
-            npm run migrations > migrations_result.txt
+            npm run migrations >> ~/project/backend/migrations_result.txt
             cat migrations_result.txt
           # Your code here
           # exit 1
