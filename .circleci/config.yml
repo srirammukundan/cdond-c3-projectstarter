@@ -238,7 +238,6 @@ jobs:
           name: Install AWS CLI
           command: |
             cd backend
-            npm install webpack-dev-server -g
             npm install
             sudo apt-get update && sudo apt-get install -yy less
             sudo apt-get install unzip -y
@@ -274,6 +273,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            cd frontend
+            npm install webpack-dev-server -g
             npm install
             sudo apt-get update && sudo apt-get install -yy less
             sudo apt-get install unzip -y
