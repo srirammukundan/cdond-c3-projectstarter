@@ -297,13 +297,10 @@ jobs:
             cd frontend
             npm install
             npm update
-            npm cache clean --force
-            npm uninstall caniuse-lite browserslist
-            npm install caniuse-lite browserslist
-            npm install caniuse-lite@latest --save
+            npx browserslist@latest --update-db
+            npm install --save-dev webpack webpack-dev-server
             npm run build
-            cd dist
-            aws s3 cp * s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}/ --recursive
       - revert-migrations
       - destroy-environment   
                           
