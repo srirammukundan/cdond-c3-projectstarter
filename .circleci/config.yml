@@ -294,6 +294,7 @@ jobs:
       - run:
           name: Deploy frontend objects
           command: |
+            cd frontend
             npm --depth 20 update --save caniuse-lite browserslist
             npm run build
             cd dist
@@ -347,19 +348,16 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update curl 
-            apk add --update rsync 
-            apk add --update curl
-            apk add --update openssh
-            apk add --update openssh-client 
+            apk add --update curl nodejs npm
             pip3 install --upgrade pip 
             pip install awscli 
       - run:
           name: Get backend url
           command: |
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
-            if curl "${API_URL}/api/status" | grep "ok"
+            cd backend
+            export BACKEND_URL=$(curl -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request GET https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID)
+            curl "$BACKEND_URL/api/status"
+            if curl "${BACKEND_URL}/api/status" | grep "ok"
             then
                 return 0
             else
@@ -372,8 +370,15 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            # your code here
-      # Here's where you will add some code to rollback on failure  
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/index.html"
+            if curl -s ${URL} | grep "Welcome"  
+            then
+              return 0
+            else
+              return 1
+            fi
+      - revert-migrations
+      - destroy-environment
 
   cloudfront-update:
     docker:
