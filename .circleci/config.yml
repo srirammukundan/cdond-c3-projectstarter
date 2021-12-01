@@ -321,7 +321,7 @@ jobs:
   deploy-frontend:
     #<<: *dok_ansible
     docker:
-      - image: circleci/aws-cli@2.0.6
+      - image: circleci/aws-cli@2.0.3
     #executor: node
     steps:
       - checkout
