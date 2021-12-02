@@ -301,9 +301,9 @@ jobs:
 
 
   run-migrations:
-    <<: *dok_node
-    #docker:
-    #  - image: cimg/node:17.2.0
+    #<<: *dok_node
+    docker:
+      - image: cimg/node:17.2.0
     #executor: node
     steps:
       - checkout
@@ -365,7 +365,7 @@ jobs:
             pip install awscli
       - run:
           name: Rebuild frontend with backend API Url
-          working_directory: ./frontend
+#          working_directory: ./frontend
           command: |
             export API_URL=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cd7gbhg" --request GET https://api.memstash.io/values/BACKEND_URL)
             echo "${API_URL}"
@@ -373,9 +373,9 @@ jobs:
 #            echo "update start"
 #            npm update
 #            npm audit fix --force
-#            echo ENVIRONMENT=production > "frontend/.env"
-#            echo NODE_ENV=production >> "frontend/.env"
-#            echo API_URL=$API_URL >> "frontend/.env"
+            echo ENVIRONMENT=production > "frontend/.env"
+            echo NODE_ENV=production >> "frontend/.env"
+            echo API_URL=$API_URL >> "frontend/.env"
       - run:
           name: Deploy frontend objects
           command: |
@@ -389,7 +389,7 @@ jobs:
           command: |
             aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
             - frontend/dist
       - destroy_environment:
@@ -401,21 +401,29 @@ jobs:
 
 
   deploy-backend:
-    executor: python
+    <<: *dok_ansible
+    #executor: python
     steps:
       - checkout
+      - restore_cache:
+          keys: [backend-build]
       - add_ssh_keys:
           fingerprints: ["ed:53:cc:2a:cf:34:bd:96:01:85:76:a0:05:73:5b:e5"]
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Install dependencies
-          working_directory: /tmp
+#          working_directory: /tmp
           command: |
-            apk add --update ansible curl rsync openssh nodejs npm
-            ansible --version
+            apk add --update curl nodejs npm
+            apk add --update ansible zip
+            apk add --update openssh-client tar gzip
             pip install awscli
-            aws --version
+#          command: |
+#            apk add --update ansible curl rsync openssh nodejs npm
+#            ansible --version
+#            pip install awscli
+#            aws --version
       - run:
           name: Build backend app
           command: |
