@@ -37,10 +37,7 @@ commands:
           # Add when this will run
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            # SUCCESS=$(curl -H "Content-Type: text/plain" -H "token: 4354a80b-6a24-410f-bfd1-d940390f894b" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7})
-            SUCCESS=$(curl -H "token: ce-${CIRCLE_WORKFLOW_ID}" \
-            --request GET https://api.memstash.io/values/migration)
-            if[ $SUCCESS==1 ] 
+            if[ $SUCCESS== 0 ] 
             then
                 cd ~/project/backend
                 npm install
@@ -318,22 +315,24 @@ jobs:
           command: |
             cd ~/project/backend
             cat ~/project/backend/migrations_result.txt
-            if grep -q "has been executed successfully." ~/project/backend/migrations_result.txt
+            if ( grep -q "No migrations are pending" ~/project/backend/migrations_result.txt )
             then
-            #  curl -H "Content-Type: text/plain" -H "token: 4354a80b-6a24-410f-bfd1-d940390f894b" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
-              curl -H "Content-Type: text/plain" -H "token: ce-${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/migration
+              curl -H "Content-Type: text/plain" -H "token: 4354a80b-6a24-410f-bfd1-d940390f894b" --request PUT --data "success" https://api.memstash.io/values/migrations_${CIRCLE_WORKFLOW_ID:0:7}
+            #  curl -H "Content-Type: text/plain" -H "token: ce-${CIRCLE_WORKFLOW_ID}" --request PUT --data "1" https://api.memstash.io/values/migration
               echo migration_${CIRCLE_WORKFLOW_ID}
-              echo "SUCCESS = 1"
+              echo "SUCCESS = 0"
             else
-            #  echo $(curl -H "Content-Type: text/plain" -H "token: 4354a80b-6a24-410f-bfd1-d940390f894b" --request PUT --data "0" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7} | grep "No migrations")
-              echo $(curl -H "Content-Type: text/plain" -H "token: ce-${CIRCLE_WORKFLOW_ID}" --request PUT --data "0" https://api.memstash.io/values/migration | grep "No migrations")
+              curl -H "Content-Type: text/plain" -H "token: 4354a80b-6a24-410f-bfd1-d940390f894b" --request PUT --data fail" https://api.memstash.io/values/migrations_${CIRCLE_WORKFLOW_ID:0:7} | grep "No migrations")
+            #  echo $(curl -H "Content-Type: text/plain" -H "token: ce-${CIRCLE_WORKFLOW_ID}" --request PUT --data "0" https://api.memstash.io/values/migration | grep "No migrations")
               echo "migration ID" migration_${CIRCLE_WORKFLOW_ID}
-              echo "FAIL = 0"
+              echo "FAIL = 1"
             fi
-            
+            export MEMSTASH_VALUE=$(curl -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request GET https://api.memstash.io/values/BACKEND_URL)
+            echo "${MEMSTASH_VALUE}"
           # Your code here
           # exit 1
       - revert-migrations
+      - destroy-environment
 
   deploy-frontend:
     docker:
