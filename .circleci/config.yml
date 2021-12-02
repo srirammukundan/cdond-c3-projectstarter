@@ -537,12 +537,13 @@ jobs:
           name: Clean up old environment
           command: |
             OldWorkflowID=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdhjikj" --request GET https://api.memstash.io/values/WorkflowID)
-            CurrentWorkflowID1=${CIRCLE_WORKFLOW_ID:0:7}
+            CurrentWorkflowID=${CIRCLE_WORKFLOW_ID:0:7}
             if [[ "$CurrentWorkflowID" != "$OldWorkflowID" ]]
             then
               echo "$OldWorkflowID!=$CurrentWorkflowID => will delete old version"
               aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
               aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
             else
               echo "$OldWorkflowID==$CurrentWorkflowID => nothing needs to be done..."
             fi
