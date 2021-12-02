@@ -39,7 +39,7 @@
 
   - name: "pm2 start npm -- start"
     become: yes
-    command: pm2 start npm -- start
+    command: pm2 start npm -- start -- --port 3030
     args:
       chdir: /home/ubuntu/
     environment:

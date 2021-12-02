@@ -256,15 +256,16 @@ jobs:
             cd backend
             npm run migrations > migration_dump.txt
             cat migration_dump.txt
-            if ( grep -q "No migrations are pending" migration_dump.txt ) 
+            migration_succesful=$(cat migration_dump.txt | grep -c "No migrations are pending")
+            if [ $migration_succesful > 0 ]; 
             then
-              echo "Migrations were succesful!"
-              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "success" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
+              echo "Migration Failed!"
+              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "1" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
             else
-              echo "Migrations encountered failure!"
-              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "fail" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
+              echo "Migrations Successful!"
+              curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "0" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
             fi
-            export MEMSTASH_VALUE=$(curl -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request GET https://api.memstash.io/values/BACKEND_URL)
+            export MEMSTASH_VALUE=$(curl -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request GET https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID)
             echo "${MEMSTASH_VALUE}"
       - revert-migrations
       - destroy-environment
@@ -361,9 +362,26 @@ jobs:
             pip3 install --upgrade pip 
             pip install awscli 
       - run:
+          name: Backend smoke test.
+          command: |
+            cd backend
+            export BACKEND_IP=$(aws ec2 describe-instances \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters "Name=tag:Name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text)
+            export API_URL="${BACKEND_IP}:3030"
+            echo "${API_URL}"
+            curl "${API_URL}/api/status"
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+                return 0
+            else
+                return 1
+            fi    
+      - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website.eu-central-1.amazonaws.com/index.html"
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/index.html"
             if curl -s ${URL} | grep "Welcome"  
             then
               return 0
@@ -434,7 +452,7 @@ workflows:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
-              only: [master]
+              only: [rsudaprojprod]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
       - run-migrations:
