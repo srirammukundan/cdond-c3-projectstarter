@@ -256,7 +256,7 @@ jobs:
             cd backend
             npm run migrations > migration_dump.txt
             cat migration_dump.txt
-            migration_succesful=$(cat migration_dump.log | grep -c "No migrations are pending")
+            migration_succesful=$(cat migration_dump.txt | grep -c "No migrations are pending")
             if [ $migration_succesful > 0 ]; 
             then
               echo "Migration Failed!"
@@ -365,7 +365,7 @@ jobs:
       - run:
           name: Frontend smoke test.
           command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3.amazonaws.com/index.html"
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/index.html"
             if curl -s ${URL} | grep "Welcome"  
             then
               return 1
