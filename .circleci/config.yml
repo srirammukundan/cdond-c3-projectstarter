@@ -303,7 +303,6 @@ jobs:
             npm i
             npm run build
             npm i pg
-            npm run typeorm
             echo " pwd ---> " pwd
             ls -la
             ls .env
