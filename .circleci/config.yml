@@ -360,6 +360,7 @@ jobs:
             apk add --update curl nodejs npm
             pip3 install --upgrade pip 
             pip install awscli 
+
       - run:
           name: Frontend smoke test.
           command: |
@@ -370,7 +371,8 @@ jobs:
             else
               return 0
             fi
-       - run:
+
+        - run:
           name: Backend smoke test.
           command: |
             cd backend
