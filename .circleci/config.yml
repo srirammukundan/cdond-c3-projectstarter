@@ -301,9 +301,9 @@ jobs:
 
 
   run-migrations:
-    #<<: *dok_node
-    docker:
-      - image: cimg/node:17.2.0
+    <<: *dok_node
+    #docker:
+    #  - image: cimg/node:17.2.0
     #executor: node
     steps:
       - checkout
