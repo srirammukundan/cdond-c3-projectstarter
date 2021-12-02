@@ -452,14 +452,15 @@ jobs:
 #          when: on_fail
 
   smoke-test:
-    executor: python
+    <<: *dok_ansible 
+    #executor: python
     steps:
       - checkout
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Install dependencies
-          working_directory: /tmp
+#          working_directory: /tmp
           command: |
             apk add --update curl nodejs npm
             pip install awscli
@@ -597,17 +598,17 @@ workflows:
           requires:
             - run-migrations
             - deploy-backend
-  #    - smoke-test:
-  #        requires:
-  #          - deploy-backend
-  #          - deploy-frontend
-  #    - cloudfront-update:
-  #        requires:
-  #           - smoke-test
+      - smoke-test:
+          requires:
+            - deploy-backend
+            - deploy-frontend
       - cloudfront-update:
           requires:
-             - deploy-backend
-             - deploy-frontend
+             - smoke-test
+  #    - cloudfront-update:
+  #        requires:
+  #           - deploy-backend
+  #           - deploy-frontend
       #      - smoke-test
       - cleanup:
           requires:
