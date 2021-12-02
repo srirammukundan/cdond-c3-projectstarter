@@ -325,7 +325,7 @@ jobs:
               echo "migration ID" migration_${CIRCLE_WORKFLOW_ID}
               echo "FAIL = 1"
             fi
-            export MEMSTASH_VALUE=$(curl -H "token: 4354a80b-6a24-410f-bfd1-d940390f894b" --request GET https://api.memstash.io/values/BACKEND_URL)
+          export MEMSTASH_VALUE=$(curl -H "token: f60d54d7-358a-43b2-adf0-76f03e1ae0ee" --request PUT --data "" https://api.memstash.io/values/BACKEND_URL)
             echo "${MEMSTASH_VALUE}"
           # Your code here
           # exit 1
@@ -358,7 +358,7 @@ jobs:
           command: |
             cd frontend
             touch .env
-            BACKEND_IP=$(curl -H "token: ce-${CIRCLE_WORKFLOW_ID}" --request GET https://api.memstash.io/values/backend-ip)
+            BACKEND_IP=$(curl -H "token: f60d54d7-358a-43b2-adf0-76f03e1ae0ee" --request PUT --data "" https://api.memstash.io/values/BACKEND_URL)
             echo "$BACKEND_IP"
             export API_URL="http://${BACKEND_IP}:3030"
             echo API_URL="$API_URL" >> .env
