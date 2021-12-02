@@ -265,7 +265,7 @@ jobs:
               echo "Migrations Successful!"
               curl -H "Content-Type: text/plain" -H "token: 8d269415-2d07-4d3b-baed-89c97c478150" --request PUT --data "0" https://api.memstash.io/values/migrations-$CIRCLE_WORKFLOW_ID
             fi
-            export MEMSTASH_VALUE=$(curl -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request GET https://api.memstash.io/values/BACKEND_URL)
+            export MEMSTASH_VALUE=$(curl -H "token: 1e288415-cfc8-4a0a-a23c-087eb7cd7678" --request GET https://api.memstash.io/values/-$CIRCLE_WORKFLOW_ID)
             echo "${MEMSTASH_VALUE}"
       - revert-migrations
       - destroy-environment
