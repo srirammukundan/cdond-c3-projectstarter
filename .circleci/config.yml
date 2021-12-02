@@ -317,22 +317,32 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
-          name: install npm
-          command: |
-            cd backend
-            npm install
-      - run:
-          name: install other dependencies
-          command: |
-            npm install typescript
-            npm --update install python3 npm        
-      - run:
           name: Run migrations
-          no_output_timeout: 10m
-          command: |
-            cd backend
-            npm run migrations > migrations_dump.txt
-            cat migrations_dump.txt
+          working_directory: ./backend
+          command: |            
+            npm install            
+            npm run build
+            npm run migrations >> migration_output.txt
+            echo " ---------"
+            cat migration_output.txt 
+            echo " ---------"
+#2      - run:
+#2          name: install npm
+#2          command: |
+#2            cd backend
+#2            npm install
+#2      - run:
+#2          name: install other dependencies
+#2          command: |
+#2            npm install typescript
+#2            npm --update install python3 npm        
+#2      - run:
+#2          name: Run migrations
+#2          no_output_timeout: 10m
+#2          command: |
+#2            cd backend
+#2            npm run migrations > migrations_dump.txt
+#2            cat migrations_dump.txt
 #            npm run migrations:revert
     #  - run:
     #      name: Install AWS CLI dependencies
