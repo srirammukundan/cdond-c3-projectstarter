@@ -303,13 +303,13 @@ jobs:
             npm i
             npm run build
             npm i pg
+            npm run typeorm
             echo " pwd ---> " pwd
             ls -la
             ls .env
             cat .env
             touch migrations_result.txt
             ls
-            npm i
             npm run migrations >> ~/project/backend/migrations_result.txt
             cat migrations_result.txt
           # Your code here
