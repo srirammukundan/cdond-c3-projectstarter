@@ -1,29 +1,21 @@
----
-- name: "update apt packages."
+- name: "update apt pkg"
   become: yes
   apt:
     update_cache: yes
-
-- name: "upgrade packages"
+- name: "upgrade apt pkg"
   become: yes
   apt:
     upgrade: yes
-
-- name: remove dependencies that are no longer required
+- name: "remove dependencies that are not reqd"
   become: yes
   apt:
     autoremove: yes
-
-- name: install node
-  shell: |
-    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash - && sudo apt-get install -y nodejs
-- name: "Install zip utility."
+- name: "install node dependencies"
   become: yes
   apt:
-    name: [ "zip", "unzip" ]
+    name: ["nodejs","npm"]
     state: latest
     update_cache: yes
-
 - name: "install pm2"
   become: yes
   npm:
