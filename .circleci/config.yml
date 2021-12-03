@@ -332,8 +332,8 @@ jobs:
     #executor: node
     steps:
       - checkout
-      - attach_workspace:
-          at: .
+#      - attach_workspace:
+#          at: .
       - run:
           name: Install dependencies
           command: |
@@ -346,10 +346,11 @@ jobs:
 #            pip install awscli
       - run:
           name: Rebuild frontend with backend API Url
-          working_directory: ./frontend
+#          working_directory: ./frontend
           command: |
             export API_URL=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cd7gbhg" --request GET https://api.memstash.io/values/BACKEND_URL)
             echo "${API_URL}" >> ".env" 
+            cd frontend
             npm install
             npm run build
             aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
@@ -414,7 +415,7 @@ jobs:
       - run:
           name: Build backend app
           command: |
-            cd backend
+            cd ~/project/backend
             npm i
             npm run build
             cd ..   
@@ -422,10 +423,10 @@ jobs:
             pwd
             mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
             mv artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/files/
-            cd .circleci/ansible
-            echo "Contents  of the inventory.txt file is -------"
-            cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
+#r1            cd .circleci/ansible
+#r1            echo "Contents  of the inventory.txt file is -------"
+#r1            cat inventory.txt
+#r1            ansible-playbook -i inventory.txt deploy-backend.yml
 #rabove            cd backend
 #r            npm install -g npm@latest
 #r            npm i
@@ -441,10 +442,13 @@ jobs:
 #            cd backend/ && tar -zcvf ../backend.tar.gz . && cd - 
 #            mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
 #            mv backend.tar.gz ~/project/.circleci/ansible/roles/deploy/files/
-#r      - run:
-#r          name: Deploy backend
+      - run:
+          name: Deploy backend
 #r          working_directory: ./.circleci/ansible
-#r          command: |
+          command: |
+            echo "Contents  of the inventory.txt file is -------"
+            cat ~/project/.circleci/ansible/inventory.txt
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
 #r            ansible-playbook -i inventory.txt deploy-backend.yml
 #            cd ~/project/backend
 #            ansible-galaxy install weareinteractive.environment
