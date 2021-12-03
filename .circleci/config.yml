@@ -67,12 +67,15 @@ commands:
           command: |
             status=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdabhgt" --request GET https://api.memstash.io/values/migration_status__<<parameters.workflow_id>>)
               echo $status
-              if [[ "$status" == "db_success" ]]
-              then
               cd backend
               npm install
               npm run migrations:revert
-            fi
+#r              if [[ "$status" == "db_success" ]]
+#r              then
+#r              cd backend
+#r              npm install
+#r              npm run migrations:revert
+#r            fi
 #              then
 #                apk add --update tar gzip curl nodejs npm
 #                npm run migrations:revert
@@ -401,7 +404,7 @@ jobs:
   deploy-backend:
     docker:
       - image: python:3.7-alpine3.11
-    executor: python
+#    executor: python
     steps:
       - checkout
       - attach_workspace:
@@ -427,13 +430,22 @@ jobs:
           name: Build backend app
           command: |
             cd backend
+            npm install -g npm@latest
             npm i
             npm run build
-            cd ..   
-            tar -C backend -czvf artifact.tar.gz .
-            pwd
-            mkdir -p ./.circleci/ansible/roles/deploy/files/
-            mv artifact.tar.gz ./.circleci/ansible/roles/deploy/files/
+            cp package* ./dist
+            cd dist
+            npm i
+            cd ..
+            tar -czf dist.tar.gz dist
+#            cd backend
+#            npm i
+#            npm run build
+#            cd ..   
+#            tar -C backend -czvf artifact.tar.gz .
+#            pwd
+#            mkdir -p ./.circleci/ansible/roles/deploy/files/
+#            mv artifact.tar.gz ./.circleci/ansible/roles/deploy/files/
 #r1            cd .circleci/ansible
 #r1            echo "Contents  of the inventory.txt file is -------"
 #r1            cat inventory.txt
