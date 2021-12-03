@@ -63,19 +63,16 @@ commands:
       - run:
           name: Revert migrations
           when: on_fail
-          working_directory: ./backend
+#          working_directory: ./backend
           command: |
             status=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdabhgt" --request GET https://api.memstash.io/values/migration_status__<<parameters.workflow_id>>)
               echo $status
-              cd backend
-              npm install
-              npm run migrations:revert
-#r              if [[ "$status" == "db_success" ]]
-#r              then
-#r              cd backend
-#r              npm install
-#r              npm run migrations:revert
-#r            fi
+              if [[ "$status" == "db_success" ]]
+              then
+                cd backend
+                npm install
+                npm run migrations:revert
+              fi
 #              then
 #                apk add --update tar gzip curl nodejs npm
 #                npm run migrations:revert
