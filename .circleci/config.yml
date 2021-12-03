@@ -307,7 +307,7 @@ jobs:
           name: store migration result in memstash
           working_directory: ./backend
           command: |
-            if [grep -q "executed successfully" migration_output.txt]
+            if grep -q 'has been executed successfully' migration_output.txt
             then
               echo "DB migration was successful"
               curl -H "Content-Type: text/plain" -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdabhgt" --request PUT --data "db_success" https://api.memstash.io/values/migration_status_${CIRCLE_WORKFLOW_ID:0:7}
@@ -393,7 +393,7 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: .      
+          at: ~/      
       - add_ssh_keys:
           fingerprints: ["ed:53:cc:2a:cf:34:bd:96:01:85:76:a0:05:73:5b:e5"]
       - run:
@@ -415,25 +415,37 @@ jobs:
           name: Build backend app
           command: |
             cd backend
-            npm install -g npm@latest
             npm i
             npm run build
-            cp package* ./dist
-            cd dist
-            npm i
-            cd ..
-            tar -czf dist.tar.gz dist
+            cd ..   
+            tar -C backend -czvf artifact.tar.gz .
+            pwd
+            mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
+            mv artifact.tar.gz ~/project/.circleci/ansible/roles/deploy/files/
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
+#rabove            cd backend
+#r            npm install -g npm@latest
+#r            npm i
+#r            npm run build
+#r            cp package* ./dist
+#r            cd dist
+#r            npm i
+#r            cd ..
+#r            tar -czf dist.tar.gz dist
 #            cd ~/project/backend
 #            ls
 #            cd ../
 #            cd backend/ && tar -zcvf ../backend.tar.gz . && cd - 
 #            mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
 #            mv backend.tar.gz ~/project/.circleci/ansible/roles/deploy/files/
-      - run:
-          name: Deploy backend
-          working_directory: ./.circleci/ansible
-          command: |
-            ansible-playbook -i inventory.txt deploy-backend.yml
+#r      - run:
+#r          name: Deploy backend
+#r          working_directory: ./.circleci/ansible
+#r          command: |
+#r            ansible-playbook -i inventory.txt deploy-backend.yml
 #            cd ~/project/backend
 #            ansible-galaxy install weareinteractive.environment
 #            cat ~/project/.circleci/ansible/inventory.txt
