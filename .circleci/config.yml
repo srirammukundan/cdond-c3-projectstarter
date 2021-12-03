@@ -45,14 +45,6 @@ commands:
             aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
             aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
             aws s3 rb s3://udapeople-<< parameters.workflow_id >> --force
-#            apk add --no-cache python3 py3-pip \
-#            && pip3 install --upgrade pip \
-#            && pip3 install awscli \
-#            && rm -rf /var/cache/apk/*
-#            echo "Destroying environment: <<parameters.workflow_id>> "
-#            aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
-#            aws s3 rm s3://udapeople-<<parameters.workflow_id>> --recursive
-#            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
 
   revert_migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -63,7 +55,6 @@ commands:
       - run:
           name: Revert migrations
           when: on_fail
-#          working_directory: ./backend
           command: |
             status=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdabhgt" --request GET https://api.memstash.io/values/migration_status__<<parameters.workflow_id>>)
               echo $status
@@ -73,10 +64,6 @@ commands:
                 npm install
                 npm run migrations:revert
               fi
-#              then
-#                apk add --update tar gzip curl nodejs npm
-#                npm run migrations:revert
-#              fi
 
 jobs:
   build-frontend:
@@ -171,7 +158,6 @@ jobs:
   deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
-#    executor: aws
     steps:
       - checkout
       - run:
@@ -218,13 +204,10 @@ jobs:
             - .circleci/ansible/inventory.txt
       - destroy_environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      #    when: on_fail
-
 
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
-#    executor: python
     steps:
       - checkout
       - add_ssh_keys:
@@ -240,45 +223,27 @@ jobs:
             aws --version 
       - run:
           name: Install dependencies
-#          working_directory: ./.circleci/ansible
           command: |
             apk add --update ansible
-#            ansible --version
       - run:
           name: Configure server
           working_directory: ./.circleci/ansible
           command: |
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
-#            pwd &&
-#            ls -la
       - destroy_environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-    #      when: on_fail
-
 
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
-#      - image: cimg/node:17.2.0
-    #executor: node
     steps:
       - checkout
-#      - attach_workspace:
-#          at: .
       - run:
           name: install aws-cli
           command: |
             sudo apt-get install python3-pip
             pip3 install awscli
-#      - run:
-#          name: Install AWS CLI dependencies
-#          working_directory: /tmp
-#          command: |
-#            sudo apt-get update && sudo apt-get install -yy less
-#            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-#            unzip awscliv2.zip
-#            sudo ./aws/install
       - run:
           name: Run migrations
           working_directory: ./backend
@@ -298,11 +263,6 @@ jobs:
             echo "-----------"
             cat migration_output.txt
             echo "-----------"
-#            npm install            
-#            npm run build
-#            npm run migrations >> migration_output.txt
-#            cat migration_output.txt    
-         #        npm audit fix --force
       - run:
           name: store migration result in memstash
           working_directory: ./backend
@@ -320,33 +280,19 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert_migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-  #        when: on_fail
-
 
   deploy-frontend:
     docker:
       - image: amazon/aws-cli
-#    <<: *dok_ansible
-    #docker:
-    #  - image: circleci/aws-cli@2.0.3
-    #executor: node
     steps:
       - checkout
-#      - attach_workspace:
-#          at: .
       - run:
           name: Install dependencies
           command: |
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
-#            apk add --update curl nodejs npm
-#            apk add --update curl tar
-#            npm install webpack-dev-server -g
-#            npm install
-#            pip install awscli
       - run:
           name: Rebuild frontend with backend API Url
-#          working_directory: ./frontend
           command: |
             cd frontend
             export BACKEND_IP=$(aws ec2 describe-instances \
@@ -359,49 +305,14 @@ jobs:
             npm install
             npm run build
             aws s3 sync dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
-#r            export API_URL=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cd7gbhg" --request GET https://api.memstash.io/values/BACKEND_URL)
-#r            echo "${API_URL}" >> ".env" 
-#r            cd frontend
-#r            npm install
-#r            npm run build
-#r            aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-#            aws s3 sync dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}
-#            echo "${API_URL}"
-#            npm run build
-#            echo "update start"
-#            npm update
-#            npm audit fix --force
-#            echo ENVIRONMENT=production > "frontend/.env"
-#            echo NODE_ENV=production >> "frontend/.env"
-#            echo API_URL=$API_URL >> "frontend/.env"
-#      - run:
-#          name: Deploy frontend objects
-#          command: |
-#            cd ~/project/frontend
-#            npm i
-#            npm install typescript@rc
-#            npm run build
-#      - run:
-#          name: Deploy frontend objects to S3
-#          working_directory: ./frontend
-#          command: |
-#            aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-#      - persist_to_workspace:
-#          root: .
-#          paths:
-#            - frontend/dist
       - destroy_environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-    #      when: on_fail
       - revert_migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-   #       when: on_fail
-
 
   deploy-backend:
     docker:
       - image: python:3.7-alpine3.11
-#    executor: python
     steps:
       - checkout
       - attach_workspace:
@@ -417,12 +328,6 @@ jobs:
             apk add --update curl
             apk add --no-cache tar
             pip3 install awscli
-#          working_directory: /tmp
-#          command: |
-#            apk add --update ansible curl rsync openssh nodejs npm
-#            ansible --version
-#            pip install awscli
-#            aws --version
       - run:
           name: Build backend app
           command: |
@@ -435,33 +340,6 @@ jobs:
             npm i
             cd ..
             tar -czf dist.tar.gz dist
-#            cd backend
-#            npm i
-#            npm run build
-#            cd ..   
-#            tar -C backend -czvf artifact.tar.gz .
-#            pwd
-#            mkdir -p ./.circleci/ansible/roles/deploy/files/
-#            mv artifact.tar.gz ./.circleci/ansible/roles/deploy/files/
-#r1            cd .circleci/ansible
-#r1            echo "Contents  of the inventory.txt file is -------"
-#r1            cat inventory.txt
-#r1            ansible-playbook -i inventory.txt deploy-backend.yml
-#rabove            cd backend
-#r            npm install -g npm@latest
-#r            npm i
-#r            npm run build
-#r            cp package* ./dist
-#r            cd dist
-#r            npm i
-#r            cd ..
-#r            tar -czf dist.tar.gz dist
-#            cd ~/project/backend
-#            ls
-#            cd ../
-#            cd backend/ && tar -zcvf ../backend.tar.gz . && cd - 
-#            mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
-#            mv backend.tar.gz ~/project/.circleci/ansible/roles/deploy/files/
       - run:
           name: Deploy backend
           working_directory: ./.circleci/ansible
@@ -469,32 +347,20 @@ jobs:
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
-#r            ansible-playbook -i inventory.txt deploy-backend.yml
-#            cd ~/project/backend
-#            ansible-galaxy install weareinteractive.environment
-#            cat ~/project/.circleci/ansible/inventory.txt
-#            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml
-#            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/node-explorer.yml
-        #    cat inventory
-        #    ansible-playbook -i inventory deploy-backend.yml -vv
       - destroy_environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-#          when: on_fail
       - revert_migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-#          when: on_fail
 
   smoke-test:
     docker:
       - image: python:3.7-alpine3.11
-#    executor: python
     steps:
       - checkout
       - attach_workspace:
           at: .
       - run:
           name: Install dependencies
-#          working_directory: /tmp
           command: |
             apk add --update nodejs
             apk add --update npm
@@ -502,8 +368,6 @@ jobs:
             pip3 install awscli
             rm -rf /car/cache/apk/*
             aws --version
-#            apk add --update curl nodejs npm
-#            pip install awscli
       - run:
           name: Backend smoke test.
           working_directory: ./backend
@@ -525,23 +389,19 @@ jobs:
             curl -s ${URL} | grep -q "Welcome"
             if curl -s ${URL} | grep -q "Welcome"
             then
-              return 1
+              return 0
             else
               return 1
             fi
      
       - destroy_environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-    #      when: on_fail
       - revert_migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-     #     when: on_fail
-
 
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
-#    executor: aws
     steps:
       - checkout
       - run:
@@ -550,9 +410,6 @@ jobs:
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
             yum -y install curl
-#            yum install -y tar gzip curl
-#            curl -sL https://rpm.nodesource.com/setup_10.x | bash -
-#            yum install -y nodejs
       - run:
           name: Store old WorkflowID in memstash for cleanup phase
           working_directory: ./.circleci/files
@@ -574,13 +431,10 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert_migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-    #      when: on_fail
-
 
   cleanup:
     docker:
       - image: amazon/aws-cli
-#    executor: aws
     steps:
       - checkout
       - run:
@@ -599,20 +453,12 @@ jobs:
           environment:
             TERM: xterm-256color
 
-
 workflows:
   default:
     jobs:
       ## BUILD AND DEPLOY
-#      - install-backend-dependencies
-#      - install-frontend-dependencies
-
       - build-backend
-#          requires:
-#            - install-backend-dependencies
       - build-frontend
-#          requires:
-#            - install-frontend-dependencies
       - test-backend:
           requires:
             - build-backend
@@ -653,11 +499,6 @@ workflows:
       - cloudfront-update:
           requires:
              - smoke-test
-#      - cloudfront-update:
-#          requires:
-#             - deploy-backend
-#             - deploy-frontend
-      #      - smoke-test
       - cleanup:
           requires:
             - cloudfront-update
