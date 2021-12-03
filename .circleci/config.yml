@@ -247,10 +247,10 @@ jobs:
           name: Configure server
           working_directory: ./.circleci/ansible
           command: |
-#            pwd &&
-#            ls -la
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
+#            pwd &&
+#            ls -la
       - destroy_environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
     #      when: on_fail
@@ -317,7 +317,7 @@ jobs:
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}" 
       - destroy_environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      - revert-migrations:
+      - revert_migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
   #        when: on_fail
 
@@ -567,15 +567,15 @@ workflows:
   default:
     jobs:
       ## BUILD AND DEPLOY
-      - install-backend-dependencies
-      - install-frontend-dependencies
+#      - install-backend-dependencies
+#      - install-frontend-dependencies
 
-      - build-backend:
-          requires:
-            - install-backend-dependencies
-      - build-frontend:
-          requires:
-            - install-frontend-dependencies
+      - build-backend
+#          requires:
+#            - install-backend-dependencies
+      - build-frontend
+#          requires:
+#            - install-frontend-dependencies
       - test-backend:
           requires:
             - build-backend
