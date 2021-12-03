@@ -344,21 +344,22 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum install sudo -y
-            curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
-            yum install nodejs -y
-            node --version
-            npm --version
-            yum install tar -y
-            yum install gzip -y
+            cd frontend
+            sudo apt-get update && sudo apt-get install -yy less
+            sudo apt-get install unzip -y
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
       - attach_workspace:
           at: ~/
+      - restore_cache:
+          keys: [frontend-build]
       - run:
           name: Get backend url
           command: |
             cd frontend
             touch .env
-            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" --output text)
             echo "$BACKEND_IP"
             export API_URL="http://${BACKEND_IP}:3030"
             echo API_URL="$API_URL" >> .env
@@ -389,6 +390,8 @@ jobs:
             - "aa:79:8f:07:da:96:16:74:7e:89:4a:61:52:9a:5a:c4"
       - attach_workspace:
           at: ~/
+      - restore_cache:
+          key: backend-build
       - run:
           name: Install dependencies
           command: |
@@ -396,6 +399,8 @@ jobs:
             apk add --update tar gzip curl
             apk add --update ansible
             apk add --update nodejs npm
+            pip3 install --upgrade pip 
+            pip install awscli
             echo "[defaults]" | cat > .circleci/ansible/ansible.cfg
             echo "host_key_checking = False" | cat >> .circleci/ansible/ansible.cfg
             cd backend
@@ -406,11 +411,11 @@ jobs:
           name: Deploy backend and install node exporter
           no_output_timeout: 90m
           command: |
-            tar -C backend -czvf artifact.tar.gz .
-            ls -la
-            cd .circleci/ansible/
-            ansible-galaxy install weareinteractive.environment
-            ansible-playbook -i inventory.txt deploy-backend.yml
+            tar -czvf artefacts.tar.gz ./backend
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat ~/project/.circleci/ansible/inventory.txt
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt deploy-backend.yml
             echo "Success"
 
 
