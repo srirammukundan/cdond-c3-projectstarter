@@ -39,7 +39,7 @@ commands:
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
             code=$(curl -H "token:3dfac46" --request GET https://api.memstash.io/values/migration_3dfac46)
             echo $code
-            if[ $code=="1" ] 
+            if [[ "$code" == "1" ]] 
             then
                 cd ~/project/backend
                 npm install
