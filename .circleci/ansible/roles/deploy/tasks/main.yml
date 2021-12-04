@@ -1,4 +1,30 @@
 ---
+- name: Creates directory
+  file:
+    path: /home/ubuntu/backend
+    state: directory
+
+- name: Copy backend dist files web server
+  copy:
+    src: ../../artefacts.tar.gz
+    dest: /home/ubuntu/backend/artifact.tar.gz
+    owner: ubuntu
+    group: ubuntu
+    mode: 0777 
+
+- name: "Copy package.json to EC2"
+  become: yes
+  copy:
+    src: ../../frontend/package.json
+    dest: /home/ubuntu/backend
+    owner: ubuntu
+
+- name: Uncompress Backend
+  shell: |
+    cd /home/ubuntu/backend
+    tar xvzf artifact.tar.gz -C .
+   
+   
 - name: "install dependencies."
   become: true
   apt:
@@ -13,31 +39,12 @@
     global: yes
     production: yes
     state: present
-
-- name: Creates directory
-  file:
-    path: /home/ubuntu/backend
-    state: directory
-
-- name: Copy backend dist files web server
-  copy:
-    src: ../../artefacts.tar.gz
-    dest: /home/ubuntu/backend/artifact.tar.gz
-    owner: ubuntu
-    group: ubuntu
-    mode: 0777 
-
-- name: Uncompress Backend
-  shell: |
-    cd /home/ubuntu/backend
-    tar xvzf artifact.tar.gz -C .
-    ls -la
     
 - name: Build
   become: true
   shell: |
     cd /home/ubuntu/backend
-    npm install
+    npm i
     npm run build
     
 - name: Copy dist files
@@ -49,4 +56,4 @@
 - name: Start PM2
   shell: |
     cd /home/ubuntu/backend 
-    pm2 start npm --name backend -- start
+    pm2 start npm --name backend -- start -- --port 3030
