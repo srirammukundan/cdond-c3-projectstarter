@@ -40,14 +40,8 @@
     production: yes
     state: present
   
-    
-- name: Copy dist files
-  become: true
-  shell:  |
-    cd /home/ubuntu/backend
-    cp -r dist/* ~/
 
 - name: Start PM2
   shell: |
-    cd /home/ubuntu/backend 
+    pwd
     pm2 start npm --name backend -- start -- --port 3030
