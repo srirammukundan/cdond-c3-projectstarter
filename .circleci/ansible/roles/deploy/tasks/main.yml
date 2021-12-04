@@ -43,7 +43,7 @@
   
 - name: Transfer backend files cloud server
   copy:
-    src: /root/project/backend/dist.tar.gz
+    src: ../../dist.tar.gz
     dest: /home/ubuntu
 
 - name: Extract backend and start node server
