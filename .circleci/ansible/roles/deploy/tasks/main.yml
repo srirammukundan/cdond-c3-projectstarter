@@ -41,10 +41,11 @@
     production: yes
     state: present
   
-- name: Transfer backend files cloud server
-  copy:
-    src: ../../dist.tar.gz
-    dest: /home/ubuntu
+- name: Copy dist files
+  become: true
+  shell:  |
+    cd /home/ubuntu/backend
+    cp -r dist/* ~/
 
 - name: Extract backend and start node server
   shell: |
@@ -57,5 +58,7 @@
 
 - name: Start PM2
   shell: |
+    pwd
+    cd /home/ubuntu/backend 
     pwd
     pm2 start npm --name backend -- start -- --port 3030
