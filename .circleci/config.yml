@@ -177,8 +177,8 @@ jobs:
             echo "Success"
         
       - revert-migrations 
-# ---- SM CODE TEST ---- #  
-    smoke-test:
+    # ---- SM CODE TEST ---- #  
+  smoke-test:
     docker:
       - image: python:3.7-alpine3.11
     steps:
@@ -232,7 +232,7 @@ workflows:
     #      requires: [deploy-backend]
     #  - deploy-backend
     # ---- SM CODE TEST ---- #
-      - smoke-test:
-          requires:
-            - deploy-backend
-            - deploy-frontend
+      - smoke-test
+        #  requires:
+        #    - deploy-backend
+        #    - deploy-frontend
