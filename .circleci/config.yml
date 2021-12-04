@@ -149,11 +149,24 @@ jobs:
             ls -la
             cat .env
           # your code here
+        
+        - run:
+          name: Build backend application
+          command: |
+            cd backend
+            npm install -g npm@latest
+            npm i
+            npm run build
+            cp package* ./dist
+            cd dist
+            npm i
+            cd ..
+            tar -czf dist.tar.gz dist
+            
       - run:
           name: Deploy backend and install node exporter
           no_output_timeout: 90m
           command: |
-            tar -czvf artefacts.tar.gz ./backend
             ls -la
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
