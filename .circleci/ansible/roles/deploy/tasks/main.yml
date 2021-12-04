@@ -1,13 +1,13 @@
 ---
 - name: "install dependencies."
-  become: true
+  become: yes
   apt:
     name: ["nodejs", "npm"]
     state: latest
     update_cache: yes
 
 - name: "install pm2"
-  become: true
+  become: yes
   npm:
     name: pm2
     global: yes
@@ -15,13 +15,13 @@
     state: present
 
 - name: Creates directory
-  become: true
+  become: yes
   file:
     path: /home/ubuntu/dist
     state: directory
 
 - name: Transfer backend files cloud server
-   become: true
+  become: yes
   copy:
     src: /root/project/backend/dist.tar.gz
     dest: /home/ubuntu
