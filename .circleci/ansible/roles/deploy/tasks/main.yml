@@ -15,11 +15,13 @@
     state: present
 
 - name: Creates directory
+  become: true
   file:
     path: /home/ubuntu/dist
     state: directory
 
 - name: Transfer backend files cloud server
+   become: true
   copy:
     src: /root/project/backend/dist.tar.gz
     dest: /home/ubuntu
