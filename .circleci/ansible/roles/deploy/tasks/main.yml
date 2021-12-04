@@ -1,13 +1,13 @@
 ---
 - name: "install dependencies."
-  become: yes
+  become: true
   apt:
     name: ["nodejs", "npm"]
     state: latest
     update_cache: yes
 
 - name: "install pm2"
-  become: yes
+  become: true
   npm:
     name: pm2
     global: yes
@@ -15,35 +15,35 @@
     state: present
 
 - name: Creates directory
-  become: yes
   file:
-    path: /home/ubuntu/dist
+    path: /home/ubuntu/backend
     state: directory
-    owner: ubuntu
-    group: ubuntu
-    mode: 0777 
 
-- name: "Copy backend build folder to EC2"
-  become: yes
-  unarchive:
-    src: ../../artefacts.tar.gz
-    dest: /home/ubuntu/
-    owner: ubuntu
-    group: ubuntu
-    mode: 0777 
-
-- name: "Copy package.json to EC2"
-  become: yes
+- name: Copy backend dist files web server
   copy:
-    src: ../../frontend/package.json
-    dest: /home/ubuntu/
-    owner: ubuntu
+    src: /root/project/artifact.tar.gz
+    dest: /home/ubuntu/backend/artifact.tar.gz
 
-- name: Extract backend and start node server
+- name: Uncompress Backend
   shell: |
-    cd /home/ubuntu
-    tar -xf dist.tar.gz
-    rm -rf dist.tar.gz
-    cd dist
-    npm i
-    pm2 start main.js --update-env
+    cd /home/ubuntu/backend
+    tar xvzf artifact.tar.gz -C .
+    ls -la
+    
+- name: Build
+  become: true
+  shell: |
+    cd /home/ubuntu/backend
+    npm install
+    npm run build
+
+- name: Copy dist files
+  become: true
+  shell:  |
+    cd /home/ubuntu/backend
+    cp -r dist/* ~/
+
+- name: Start PM2
+  shell: |
+    cd /home/ubuntu/backend 
+    pm2 start npm --name backend -- start
