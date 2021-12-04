@@ -44,14 +44,12 @@
 - name: Copy dist files
   become: true
   shell:  |
-    cd /home/ubuntu/backend
-    cp -r dist/* ~/
+    cd /home/ubuntu/dist
+    cp -r backend/* ~/
 
-- name: Extract backend and start node server
+- name: start node server
   shell: |
     cd /home/ubuntu
-    tar -xf dist.tar.gz
-    rm -rf dist.tar.gz
     cd dist
     npm i
     pm2 start main.js --update-env
@@ -59,6 +57,6 @@
 - name: Start PM2
   shell: |
     pwd
-    cd /home/ubuntu/backend 
+    cd /home/ubuntu/dist 
     pwd
     pm2 start npm --name backend -- start -- --port 3030
