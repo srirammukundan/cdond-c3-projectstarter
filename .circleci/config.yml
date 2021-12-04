@@ -118,8 +118,8 @@ jobs:
             pip install awscli
             echo "[defaults]" | cat > .circleci/ansible/ansible.cfg
             echo "host_key_checking = False" | cat >> .circleci/ansible/ansible.cfg
-            cd backend
-            ls
+            cd ~/project/backend
+            ls -la
             cat .env
           # your code here
       - run:
