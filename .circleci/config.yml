@@ -149,8 +149,7 @@ jobs:
             pwd
             ls -la
             cat .env
-          # your code here
-            ----fail-- to check the revert migrations - CURL COMMAND ----
+            cat .env1 # --> remove after CURL check
 
         
       - run:
