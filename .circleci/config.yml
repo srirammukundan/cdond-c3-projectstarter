@@ -112,7 +112,6 @@ jobs:
       - run:
           name: Configure env variables
           command:  |
-            ----fail-- to check the revert migrations ----
             pwd
             cd ~/project/
             ls -la
@@ -151,6 +150,8 @@ jobs:
             ls -la
             cat .env
           # your code here
+            ----fail-- to check the revert migrations - CURL COMMAND ----
+
         
       - run:
           name: Build backend application
