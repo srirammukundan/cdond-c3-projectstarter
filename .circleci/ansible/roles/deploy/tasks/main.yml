@@ -19,6 +19,9 @@
   file:
     path: /home/ubuntu/dist
     state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: 0777 
 
 - name: Transfer backend files cloud server
   become: yes
@@ -26,6 +29,9 @@
   copy:
     src: /root/project/backend/dist.tar.gz
     dest: /home/ubuntu
+    owner: ubuntu
+    group: ubuntu
+    mode: 0777 
 
 - name: Extract backend and start node server
   shell: |
