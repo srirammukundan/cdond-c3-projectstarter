@@ -107,6 +107,31 @@ jobs:
           at: ~/
       - restore_cache:
           key: backend-build
+      #---------------------------------------
+      # SM CODE CHECK
+      - run:
+          name: Configure env variables
+          command:  |
+            pwd
+            cd ~/project/
+            ls -la
+            touch backend/.env
+            echo ENVIRONMENT=production >> "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+            echo TYPEORM_HOST="$TYPEORM_HOST" >> "backend/.env"
+            echo TYPEORM_PORT="$TYPEORM_PORT" >> "backend/.env"
+            echo TYPEORM_USERNAME="$TYPEORM_USERNAME" >> "backend/.env"
+            echo TYPEORM_PASSWORD="$TYPEORM_PASSWORD" >> "backend/.env"
+            echo TYPEORM_DATABASE="$TYPEORM_DATABASE" >> "backend/.env"
+            echo NODE_ENV=local >> "backend/.env"
+            echo "--------------------------------"
+            echo "----------Env Variables---------"
+            echo "--------------------------------"
+            cat backend/.env
+          #---------------------------------------
       - run:
           name: Install dependencies
           command: |
@@ -118,7 +143,9 @@ jobs:
             pip install awscli
             echo "[defaults]" | cat > .circleci/ansible/ansible.cfg
             echo "host_key_checking = False" | cat >> .circleci/ansible/ansible.cfg
+            pwd
             cd ~/project/backend
+            pwd
             ls -la
             cat .env
           # your code here
