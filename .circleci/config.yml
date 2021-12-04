@@ -85,8 +85,8 @@ jobs:
             cd frontend
             npm i
             npm run build
-            aws s3 cp ~/project/frontend/ s3://udapeople-289fe0f --recursive
-          # your code here
+            aws s3 cp ~/project/frontend/dist s3://udapeople-289fe0f --recursive
+            # your code here
       - persist_to_workspace:
           root: ~/
           paths:
