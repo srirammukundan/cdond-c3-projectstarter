@@ -21,8 +21,11 @@
 
 - name: Copy backend dist files web server
   copy:
-    src: /root/project/artifact.tar.gz
+    src: ../../artefacts.tar.gz
     dest: /home/ubuntu/backend/artifact.tar.gz
+    owner: ubuntu
+    group: ubuntu
+    mode: 0777 
 
 - name: Uncompress Backend
   shell: |
@@ -36,7 +39,7 @@
     cd /home/ubuntu/backend
     npm install
     npm run build
-
+    
 - name: Copy dist files
   become: true
   shell:  |
