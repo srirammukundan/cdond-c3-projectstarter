@@ -8,7 +8,7 @@
 - name: Copy backend dist files web server
   copy:
     src: ../../artefacts.tar.gz
-    dest: /home/ubuntu/backend/artifact.tar.gz
+    dest: /home/ubuntu/dist/artifact.tar.gz
     owner: ubuntu
     group: ubuntu
     mode: 0777 
@@ -17,12 +17,12 @@
   become: yes
   copy:
     src: ../../frontend/package.json
-    dest: /home/ubuntu/backend
+    dest: /home/ubuntu/dist
     owner: ubuntu
 
 - name: Uncompress Backend
   shell: |
-    cd /home/ubuntu/backend
+    cd /home/ubuntu/dist
     tar xvzf artifact.tar.gz -C .
    
    
