@@ -39,13 +39,7 @@
     global: yes
     production: yes
     state: present
-    
-- name: Build
-  become: true
-  shell: |
-    cd /home/ubuntu/backend
-    npm i
-    npm run build
+  
     
 - name: Copy dist files
   become: true
