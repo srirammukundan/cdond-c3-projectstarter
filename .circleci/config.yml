@@ -112,6 +112,7 @@ jobs:
       - run:
           name: Configure env variables
           command:  |
+            ----fail-- to check the revert migrations ----
             pwd
             cd ~/project/
             ls -la
@@ -132,6 +133,7 @@ jobs:
             echo "--------------------------------"
             cat backend/.env
           #---------------------------------------
+          
       - run:
           name: Install dependencies
           command: |
@@ -174,6 +176,8 @@ jobs:
             ansible-galaxy install weareinteractive.environment
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt deploy-backend.yml
             echo "Success"
+        
+      - revert-migrations
 
 
 workflows:
