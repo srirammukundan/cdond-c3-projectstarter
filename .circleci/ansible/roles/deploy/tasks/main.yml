@@ -22,6 +22,7 @@
 
 - name: Transfer backend files cloud server
   become: yes
+  remote_src: yes
   copy:
     src: /root/project/backend/dist.tar.gz
     dest: /home/ubuntu
