@@ -19,13 +19,6 @@
     path: /home/ubuntu/backend
     state: directory
 
-- name: Copy backend dist files web server
-  copy:
-    src: ../../artefacts.tar.gz
-    dest: /home/ubuntu/backend/artifact.tar.gz
-    owner: ubuntu
-    group: ubuntu
-    mode: 0777 
 
 - name: "Copy package.json to EC2"
   become: yes
