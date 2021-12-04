@@ -9,7 +9,7 @@ commands:
     
     parameters:
       stack_name:
-        default: stack-289fe0f9
+        default: stack-289fe0f
         type: string
         
     steps: 
@@ -17,14 +17,14 @@ commands:
           name: Destroy S3 Buckets
           when: on_fail
           command: |
-            aws s3 rm s3://udapeople-289fe0f9 --recursive
-            aws s3 rb s3://udapeople-289fe0f9 --force
+            aws s3 rm s3://udapeople-289fe0f --recursive
+            aws s3 rb s3://udapeople-289fe0f --force
       - run:
           name: Destroy Stacks
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name frontend-289fe0f9
-            aws cloudformation delete-stack --stack-name backend-289fe0f9
+            aws cloudformation delete-stack --stack-name frontend-289fe0f
+            aws cloudformation delete-stack --stack-name backend-289fe0f
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -37,7 +37,7 @@ commands:
           # Add when this will run
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS = $(curl -H "token:289fe0f9" --request GET https://api.memstash.io/values/migration_289fe0f9)
+            SUCCESS = $(curl -H "token:289fe0f" --request GET https://api.memstash.io/values/migration_289fe0f)
             echo $SUCCESS
             if[ $SUCCESS== 0 ] 
             then
@@ -74,7 +74,7 @@ jobs:
           command: |
             cd frontend
             touch .env
-            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=udapeople-backend-289fe0f9" --output text)
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters "Name=tag:Name,Values=backend-289fe0f" --output text)
             echo "$BACKEND_IP"
             export API_URL="http://${BACKEND_IP}:3030"
             echo API_URL="$API_URL" >> .env
@@ -85,7 +85,7 @@ jobs:
             cd frontend
             npm i
             npm run build
-            aws s3 cp ~/project/frontend/dist s3://udapeople-289fe0f9 --recursive
+            aws s3 cp ~/project/frontend/ s3://udapeople-289fe0f --recursive
           # your code here
       - persist_to_workspace:
           root: ~/
