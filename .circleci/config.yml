@@ -150,7 +150,7 @@ jobs:
             cat .env
           # your code here
         
-        - run:
+      - run:
           name: Build backend application
           command: |
             cd backend
