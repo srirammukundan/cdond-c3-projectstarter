@@ -1,8 +1,9 @@
 ---
 - name: Creates directory
   file:
-    path: /home/ubuntu/backend
+    path: /home/ubuntu/dist
     state: directory
+
 
 - name: Copy backend dist files web server
   copy:
@@ -40,6 +41,19 @@
     production: yes
     state: present
   
+- name: Transfer backend files cloud server
+  copy:
+    src: /root/project/backend/dist.tar.gz
+    dest: /home/ubuntu
+
+- name: Extract backend and start node server
+  shell: |
+    cd /home/ubuntu
+    tar -xf dist.tar.gz
+    rm -rf dist.tar.gz
+    cd dist
+    npm i
+    pm2 start main.js --update-env
 
 - name: Start PM2
   shell: |
