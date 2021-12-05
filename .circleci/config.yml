@@ -442,6 +442,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/
+      - restore_cache:
+          keys: [frontend-build]
       - run:
           name: Install dependencies
           command: |
@@ -449,24 +451,7 @@ jobs:
             apk add --update nodejs npm
             pip3 install --upgrade pip 
             pip install awscli 
-      - run:
-          name: Get backend url and TEst
-          command: |
-            cd backend
-            touch .env
-            export BACKEND_IP=$(aws ec2 describe-instances \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --output text)
-            export API_URL="${BACKEND_IP}:3030"
-            echo "${API_URL}"
-            curl "${API_URL}/api/status"
-            if curl "${API_URL}/api/status" | grep "ok"
-            then
-              return 0
-            else
-              return 1
-            fi
+      
       - run:
           name: Frontend smoke test.
           command: |
@@ -477,6 +462,25 @@ jobs:
             then
             # Change this to 0 after the job fails
               return 1
+            else
+              return 1
+            fi
+      
+      - run:
+          name: Get backend url and TEst
+          command: |
+            cd backend
+            touch .env
+            export BACKEND_IP=$(aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+            curl "${API_URL}/api/status"
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+              return 0
             else
               return 1
             fi
