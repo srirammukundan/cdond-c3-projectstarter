@@ -187,7 +187,6 @@ jobs:
           command: |
             aws ec2 describe-instances --query \
             'Reservations[*].Instances[*].PublicIpAddress' \
-      #      --filters "Name=instance-state-name,Values=running" \
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"  \
             --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
