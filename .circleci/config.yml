@@ -43,7 +43,7 @@ commands:
             then
                 cd ~/project/backend
                 npm install
-                npm run migration:revert
+            #   npm run migration:revert
             #  Add revert code here. You can find this in the Getting Started section.
               exit 1
             fi
@@ -196,9 +196,9 @@ jobs:
           command: |
             BACKEND_IP=$(aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --filters "Name=tag:project,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text)
-              curl -H "Content-Type: text/plain" -H "token: 465305e8-f67a-4d50-88a7-87305d26b78a" --request PUT --data "http://$BACKEND_IP:3030" https://api.memstash.io/values/BACKEND_URL      
+          echo "Memstash value-" $(curl -H "Content-Type: text/plain" -H "token: 465305e8-f67a-4d50-88a7-87305d26b78a" --request PUT --data "http://$BACKEND_IP:3030" https://api.memstash.io/values/BACKEND_URL)
 
       - persist_to_workspace:
           root: ~/
@@ -451,17 +451,16 @@ jobs:
             pip3 install --upgrade pip 
             pip install awscli 
       - run:
-          name: Get backend url
+          name: Get backend url and TEst
           command: |
-            cd frontend
+            cd backend
             touch .env
-            export BACKEND_URL=$(curl -H "token: 465305e8-f67a-4d50-88a7-87305d26b78a" --request GET https://api.memstash.io/values/BACKEND_URL)
-            echo "$BACKEND_IP"
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "$API_URL"
-      - run:
-          name: Backend smoke test.
-          command: |
+            export BACKEND_IP=$(aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --output text)
+            export API_URL="${BACKEND_IP}:3030"
+            echo "${API_URL}"
             curl "${API_URL}/api/status"
             if curl "${API_URL}/api/status" | grep "ok"
             then
