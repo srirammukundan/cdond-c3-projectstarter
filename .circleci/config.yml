@@ -83,12 +83,12 @@ jobs:
             cat ~/project/backend/migrations_dump.txt
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
-              curl -H "Content-Type: text/plain" -H "token:${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
-              echo migration_${CIRCLE_WORKFLOW_ID}
+              curl -H "Content-Type: text/plain" -H "token:3dfac46" --request PUT --data "1" https://api.memstash.io/values/migration_3dfac46
+              echo migration_3dfac46
               echo "SUCCESS = 0"
             else
-              echo $(curl -H "Content-Type: text/plain" -H "token:${CIRCLE_WORKFLOW_ID:0:7}" --request PUT --data "0" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7} | grep "No migrations happened")
-              echo "migration ID" migration_${CIRCLE_WORKFLOW_ID}
+              echo $(curl -H "Content-Type: text/plain" -H "token:3dfac46" --request PUT --data "0" https://api.memstash.io/values/migration_3dfac46 | grep "No migrations happened")
+              echo "migration ID" migration_3dfac46
               echo "FAIL = 1"
             fi
           # Your code here
@@ -288,7 +288,7 @@ jobs:
 workflows:
   default:
     jobs:
-     - run-migrations
+      - run-migrations
       - deploy-frontend:
           requires: [deploy-backend]
       - deploy-backend:
