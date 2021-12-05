@@ -187,16 +187,17 @@ jobs:
           command: |
             aws ec2 describe-instances --query \
             'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+      #      --filters "Name=instance-state-name,Values=running" \
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"  \
             --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
             
       - run:
           name: Save backend URL in memstash
           command: |
-            BACKEND_IP=$(aws ec2 describe-instances --query \
+            export BACKEND_IP=$(aws ec2 describe-instances --query \
             'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}"  \
               --output text)
             echo $BACKEND_IP
             curl -H "Content-Type: text/plain" -H "token: 01a0cc03-4838-4e82-a1b4-996fc33c2659" --request PUT --data "http://$BACKEND_IP:3030" https://api.memstash.io/values/BACKEND_URL
