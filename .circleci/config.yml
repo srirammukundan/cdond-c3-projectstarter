@@ -57,7 +57,7 @@ commands:
           when: on_fail
           command: |
             status=$(curl -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdabhgt" --request GET https://api.memstash.io/values/migration_status__<<parameters.workflow_id>>)
-              echo $status
+            echo $status
               if [[ "$status" == "db_success" ]]
               then
                 cd backend
