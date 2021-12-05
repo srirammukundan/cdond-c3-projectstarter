@@ -177,6 +177,7 @@ jobs:
             echo "Success"
         
       - revert-migrations 
+  
   smoke-test:
     docker:
       - image: python:3.7-alpine3.11
@@ -188,6 +189,9 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update tar gzip curl
+            apk add --update nodejs npm
+            pip3 install --upgrade pip 
+            pip install awscli 
       - run:
           name: Get backend url
           command: |
