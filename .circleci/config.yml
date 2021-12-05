@@ -27,13 +27,11 @@ commands:
           #  aws cloudformation delete-stack --stack-name backend-8beb967
 
   revert-migrations:
-    description: Revert the last migration if successfully run in the current workflow.
-    parameters:
-      # Add parameter here     
+    description: Revert the last migration if successfully run in the current workflow.   
     steps:
       - run:
           name: Revert migrations
-          When: on_fail
+          when: on_fail
           # Add when this will run
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
