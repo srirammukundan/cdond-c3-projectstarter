@@ -41,62 +41,6 @@ commands:
             fi
 jobs:
 
-  run-migrations:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [backend-build]
-    #  - run:
-    #      name: Install dependencies
-    #      command: |
-    #        sudo apt update
-    #        sudo apt upgrade -y
-    #        sudo apt install -y awscli
-      - run:
-          name: Run migrations
-          no_output_timeout: 30m
-          command: |
-            ls -la
-            pwd
-            cd ~/project/backend
-            pwd
-            npm i
-            npm run build
-            npm i pg
-            npm run migrations:revert
-            echo " pwd ---> " pwd
-            ls -la
-            ls .env
-            cat .env
-            touch migrations_dump.txt
-            ls
-            npm run migrations > ~/project/backend/migrations_dump.txt
-            cat migrations_dump.txt
-          # Your code here
-          # exit 1
-      - run:
-          name: Send migration results to memstash
-          command: |
-            cd ~/project/backend
-            cat ~/project/backend/migrations_dump.txt
-            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
-            then
-              curl -H "Content-Type: text/plain" -H "token:3dfac46" --request PUT --data "1" https://api.memstash.io/values/migration_3dfac46
-              echo migration_3dfac46
-              echo "SUCCESS = 0"
-            else
-              echo $(curl -H "Content-Type: text/plain" -H "token:3dfac46" --request PUT --data "0" https://api.memstash.io/values/migration_3dfac46 | grep "No migrations happened")
-              echo "migration ID" migration_3dfac46
-              echo "FAIL = 1"
-            fi
-          # Your code here
-          # exit 1
-      - revert-migrations
-      - destroy-environment
-
-
   deploy-frontend:
     docker:
       - image: amazon/aws-cli
@@ -224,29 +168,15 @@ jobs:
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt deploy-backend.yml
             echo "Success"
         
-      - revert-migrations 
-  
-  sm-test:
-    docker:
-      - image: python:3.7-alpine3.11
-    steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints:
-            - "aa:79:8f:07:da:96:16:74:7e:89:4a:61:52:9a:5a:c4"
-      - attach_workspace:
-          at: ~/
-      - restore_cache:
-          key: backend-build
       - run:
-          name: Install dependencies
+          name: Install SMOKE TEST dependencies
           command: |
             apk add --update tar gzip curl
             apk add --update nodejs npm
             pip3 install --upgrade pip 
             pip install awscli 
       - run:
-          name: Get backend url
+          name: Get backend url  SMOKE TEST 
           command: |
             cd frontend
             touch .env
@@ -258,7 +188,7 @@ jobs:
             cat .env
           
       - run:
-          name: Frontend smoke test.
+          name: Frontend smoke test  SMOKE TEST 
           command: |
             curl "${API_URL}/api/status" 
             if curl "${API_URL}/api/status" | grep "ok"
@@ -288,12 +218,8 @@ jobs:
 workflows:
   default:
     jobs:
-      - run-migrations
       - deploy-frontend:
           requires: [deploy-backend]
-      - deploy-backend:
-          requires: [run-migrations]
-      - sm-test:
-          requires: [deploy-backend, deploy-frontend]
+      - deploy-backend
 
     
