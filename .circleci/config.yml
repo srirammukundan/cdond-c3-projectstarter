@@ -451,7 +451,7 @@ jobs:
             echo API_URL="$API_URL" >> .env
             cat .env
       - run:
-          name: Frontend smoke test.
+          name: Backend smoke test.
           command: |
             if curl "${API_URL}/api/status" | grep "ok"
             then
@@ -460,7 +460,7 @@ jobs:
               return 1
             fi
       - run:
-          name: Backend smoke test.
+          name: Frontend smoke test.
           command: |
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"            
             echo $url
