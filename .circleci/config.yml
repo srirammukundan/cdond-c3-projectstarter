@@ -245,24 +245,44 @@ jobs:
             sudo apt-get install python3-pip
             pip3 install awscli
       - run:
-          name: Run migrations
-          working_directory: ./backend
-          command: |            
-            echo ENVIROMENT=$ENVIROMENT > ".env"
-            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> ".env"
-            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
-            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> ".env"
-            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> ".env"
-            echo TYPEORM_HOST=$TYPEORM_HOST >> ".env"
-            echo TYPEORM_PORT=$TYPEORM_PORT >> ".env"
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> ".env"
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
-            npm install
+          name: Run migrations - sm try
+          command: |
+            cd ~/project/backend
+            pwd
+            npm i
+            npm run build
+            npm i pg
+            npm run migrations:revert
+            ls .env
+            cat .env
             npm run migrations > migration_output.txt
             echo "-----------"
             cat migration_output.txt
             echo "-----------"
+      - run:
+          name: Run migrations
+          command: |          
+            pwd
+            cd ~/project/
+            ls -la
+            touch backend/.env
+            echo ENVIRONMENT=production >> "backend/.env"
+            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+            echo TYPEORM_ENTITIES=./src/modules/**/*.entity.ts >> "backend/.env"
+            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+            echo TYPEORM_HOST="$TYPEORM_HOST" >> "backend/.env"
+            echo TYPEORM_PORT="$TYPEORM_PORT" >> "backend/.env"
+            echo TYPEORM_USERNAME="$TYPEORM_USERNAME" >> "backend/.env"
+            echo TYPEORM_PASSWORD="$TYPEORM_PASSWORD" >> "backend/.env"
+            echo TYPEORM_DATABASE="$TYPEORM_DATABASE" >> "backend/.env"
+            echo NODE_ENV=local >> "backend/.env"
+            echo "--------------------------------"
+            echo "----------Env Variables---------"
+            echo "--------------------------------"
+
+            cat backend/.env
+
       - run:
           name: store migration result in memstash
           working_directory: ./backend
