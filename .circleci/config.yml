@@ -244,21 +244,7 @@ jobs:
           command: |
             sudo apt-get install python3-pip
             pip3 install awscli
-      - run:
-          name: Run migrations - sm try
-          command: |
-            cd ~/project/backend
-            pwd
-            npm i
-            npm run build
-            npm i pg
-            npm run migrations:revert
-            ls .env
-            cat .env
-            npm run migrations > migration_output.txt
-            echo "-----------"
-            cat migration_output.txt
-            echo "-----------"
+     
       - run:
           name: Run migrations
           command: |          
@@ -280,9 +266,24 @@ jobs:
             echo "--------------------------------"
             echo "----------Env Variables---------"
             echo "--------------------------------"
-
             cat backend/.env
-
+            
+      - run:
+          name: Run migrations - sm try
+          command: |
+            cd ~/project/backend
+            pwd
+            npm i
+            npm run build
+            npm i pg
+            npm run migrations:revert
+            ls .env
+            cat .env
+            npm run migrations > migration_output.txt
+            echo "-----------"
+            cat migration_output.txt
+            echo "-----------"
+            
       - run:
           name: store migration result in memstash
           working_directory: ./backend
