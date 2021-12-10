@@ -211,7 +211,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["aa:79:8f:07:da:96:16:74:7e:89:4a:61:52:9a:5a:c4"]
+          fingerprints: ["77:8a:ab:8d:c8:55:cf:d5:cd:4f:31:b1:14:cc:06:64"]
       - attach_workspace:
           at: .
       - run:
@@ -340,7 +340,7 @@ jobs:
       - attach_workspace:
           at: .
       - add_ssh_keys:
-          fingerprints: ["aa:79:8f:07:da:96:16:74:7e:89:4a:61:52:9a:5a:c4"]
+          fingerprints: ["77:8a:ab:8d:c8:55:cf:d5:cd:4f:31:b1:14:cc:06:64"]
       - run:
           name: Install dependencies
           command: |
@@ -479,7 +479,6 @@ jobs:
 workflows:
   default:
     jobs:
-      ## BUILD AND DEPLOY
       - build-backend
       - build-frontend
       - test-backend:
@@ -495,7 +494,6 @@ workflows:
           requires:
             - build-frontend
           
-      ##  INFRASTRUCTURE--
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
