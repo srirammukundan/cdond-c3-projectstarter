@@ -245,46 +245,25 @@ jobs:
           command: |
             sudo apt-get install python3-pip
             pip3 install awscli
-     
       - run:
           name: Run migrations
-          command: |          
-            pwd
-            cd ~/project/
-            ls -la
-            touch backend/.env
-            echo ENVIRONMENT=production >> "backend/.env"
-            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
-            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
-            echo TYPEORM_ENTITIES=./src/modules/**/*.entity.ts >> "backend/.env"
-            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
-            echo TYPEORM_HOST="$TYPEORM_HOST" >> "backend/.env"
-            echo TYPEORM_PORT="$TYPEORM_PORT" >> "backend/.env"
-            echo TYPEORM_USERNAME="$TYPEORM_USERNAME" >> "backend/.env"
-            echo TYPEORM_PASSWORD="$TYPEORM_PASSWORD" >> "backend/.env"
-            echo TYPEORM_DATABASE="$TYPEORM_DATABASE" >> "backend/.env"
-            echo NODE_ENV=local >> "backend/.env"
-            echo "--------------------------------"
-            echo "----------Env Variables---------"
-            echo "--------------------------------"
-            cat backend/.env
-            
-      - run:
-          name: Run migrations - sm try
-          command: |
-            cd ~/project/backend
-            pwd
-            npm i
-            npm run build
-            npm i pg
-            npm run migrations:revert
-            ls .env
-            cat .env
+          working_directory: ./backend
+          command: |            
+            echo ENVIROMENT=$ENVIROMENT > ".env"
+            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> ".env"
+            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
+            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> ".env"
+            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> ".env"
+            echo TYPEORM_HOST=$TYPEORM_HOST >> ".env"
+            echo TYPEORM_PORT=$TYPEORM_PORT >> ".env"
+            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> ".env"
+            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
+            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
+            npm install
             npm run migrations > migration_output.txt
             echo "-----------"
             cat migration_output.txt
             echo "-----------"
-            
       - run:
           name: store migration result in memstash
           working_directory: ./backend
@@ -294,7 +273,7 @@ jobs:
               echo "DB migration was successful"
               curl -H "Content-Type: text/plain" -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdabhgt" --request PUT --data "db_success" https://api.memstash.io/values/migration_status_${CIRCLE_WORKFLOW_ID:0:7}
             else
-              echo "DB migration failed, looks like already exists...moving on."
+              echo "DB migration failed, take further actions."
               curl -H "Content-Type: text/plain" -H "token: 7e6f4440-e8d4-41b2-9300-1ff02cdabhgt" --request PUT --data "db_failure" https://api.memstash.io/values/migration_status_${CIRCLE_WORKFLOW_ID:0:7}
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}" 
@@ -302,7 +281,6 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert_migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-
 
   deploy-frontend:
     docker:
