@@ -43,9 +43,9 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
-            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
-            aws s3 rb s3://udapeople-<< parameters.workflow_id >> --force
+           # aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.workflow_id>>
+           # aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.workflow_id>>
+           # aws s3 rb s3://udapeople-<< parameters.workflow_id >> --force
 
   revert_migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -62,8 +62,8 @@ commands:
               if [[ "$status" == "db_success" ]]
               then
                 cd backend
-                npm install
-                npm run migrations:revert
+              #  npm install
+              #  npm run migrations:revert
               fi
 
 jobs:
@@ -212,7 +212,7 @@ jobs:
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["24:d2:08:8b:4a:29:78:2c:ec:b7:04:24:90:c4:5c:83"]
+          fingerprints: ["aa:79:8f:07:da:96:16:74:7e:89:4a:61:52:9a:5a:c4"]
       - attach_workspace:
           at: .
       - run:
@@ -319,7 +319,7 @@ jobs:
       - attach_workspace:
           at: .
       - add_ssh_keys:
-          fingerprints: ["24:d2:08:8b:4a:29:78:2c:ec:b7:04:24:90:c4:5c:83"]
+          fingerprints: ["aa:79:8f:07:da:96:16:74:7e:89:4a:61:52:9a:5a:c4"]
       - run:
           name: Install dependencies
           command: |
