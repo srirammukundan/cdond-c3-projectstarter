@@ -245,6 +245,10 @@ jobs:
             sudo apt-get install python3-pip
             pip3 install awscli
       - run:
+          name: reverts for DB successfulness
+          command: |
+             npm run migrations:revert
+      - run:
           name: Run migrations
           working_directory: ./backend
           command: |            
@@ -340,15 +344,7 @@ jobs:
             pwd
             mkdir -p ./.circleci/ansible/roles/deploy/files/
             mv artifact.tar.gz ./.circleci/ansible/roles/deploy/files/
-#R            cd backend
-#R            npm install -g npm@latest
-#R            npm i
-#R            npm run build
-#R            cp package* ./dist
-#R            cd dist
-#R            npm i
-#R            cd ..
-#R            tar -czf dist.tar.gz dist
+
       - run:
           name: Build backend app1
           command: |
@@ -359,22 +355,22 @@ jobs:
             cd ..
             tar -czf dist.tar.gz dist
       
-      - run:
-          name: Configure env variables
-          command:  |
-            touch backend/.env
-            echo ENVIRONMENT=production >> "backend/.env"
-            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
-            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
-            echo TYPEORM_ENTITIES=./src/modules/**/*.entity.ts >> "backend/.env"
-            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
-            echo TYPEORM_HOST="$TYPEORM_HOST" >> "backend/.env"
-            echo TYPEORM_PORT="$TYPEORM_PORT" >> "backend/.env"
-            echo TYPEORM_USERNAME="$TYPEORM_USERNAME" >> "backend/.env"
-            echo TYPEORM_PASSWORD="$TYPEORM_PASSWORD" >> "backend/.env"
-            echo TYPEORM_DATABASE="$TYPEORM_DATABASE" >> "backend/.env"
-            echo NODE_ENV=local >> "backend/.env"
-            cat backend/.env
+#      - run:
+#          name: Configure env variables
+#          command:  |
+#            touch backend/.env
+#            echo ENVIRONMENT=production >> "backend/.env"
+#            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
+#            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
+#            echo TYPEORM_ENTITIES=./src/modules/**/*.entity.ts >> "backend/.env"
+#            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
+#            echo TYPEORM_HOST="$TYPEORM_HOST" >> "backend/.env"
+#            echo TYPEORM_PORT="$TYPEORM_PORT" >> "backend/.env"
+#            echo TYPEORM_USERNAME="$TYPEORM_USERNAME" >> "backend/.env"
+#            echo TYPEORM_PASSWORD="$TYPEORM_PASSWORD" >> "backend/.env"
+#            echo TYPEORM_DATABASE="$TYPEORM_DATABASE" >> "backend/.env"
+#            echo NODE_ENV=local >> "backend/.env"
+#            cat backend/.env
             
       - run:
           name: Deploy backend
