@@ -244,10 +244,7 @@ jobs:
           command: |
             sudo apt-get install python3-pip
             pip3 install awscli
-      - run:
-          name: reverts for DB successfulness
-          command: |
-             npm run migrations:revert
+
       - run:
           name: Run migrations
           working_directory: ./backend
