@@ -153,6 +153,8 @@ jobs:
           name: Back-end scan
           command: |
              cd backend
+             npm outdated
+             npm update
              npm audit fix --audit-level=critical --force
 
   deploy-infrastructure:
