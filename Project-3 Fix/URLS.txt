@@ -1,0 +1,6 @@
+[URL01]:https://github.com/srirammukundan/cdond-c3-projectstarter
+[URL02]:http://udapeople-6ab2f45.s3-website-us-east-1.amazonaws.com
+[URL03_SCREENSHOT]: http://d1vgxu3hwgqrjn.cloudfront.net/#/employees
+URL04_SCREENSHOT: http://3.92.179.104:3030/api/status
+URL05_SCREENSHOT:http://ec2-3-93-6-119.compute-1.amazonaws.com:9090/targets
+		http://ec2-3-93-6-119.compute-1.amazonaws.com:9090/alerts
