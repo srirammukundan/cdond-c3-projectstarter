@@ -502,7 +502,7 @@ workflows:
           requires:
             - build-frontend
           
-      ##  INFRASTRUCTURE--SM test
+      ##  INFRASTRUCTURE--SM test exec
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
